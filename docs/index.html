@@ -246,7 +246,7 @@
       <h1>The gate opens <em>before you reach it.</em></h1>
       <p class="lede">GateKeeper rings your call-to-open gate automatically when you drive up to your parking spot, or pull away from it. Exactly once, from the right SIM.</p>
       <div class="cta">
-        <a class="btn btn-primary" id="download" data-abi="arm64-v8a" href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-arm64-v8a.apk">
+        <a class="btn btn-primary" id="download" data-abi="arm64-v8a" href="https://github.com/SanuSanal/gatekeeper/releases/latest">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
           Download APK <small id="version"></small>
         </a>
@@ -397,19 +397,19 @@
         <h3>Download <span id="dl-version"></span></h3>
         <span id="dl-status">Direct links to the latest signed release.</span>
       </div>
-      <a class="dl recommended" data-abi="arm64-v8a" href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-arm64-v8a.apk">
+      <a class="dl recommended" data-abi="arm64-v8a" href="https://github.com/SanuSanal/gatekeeper/releases/latest">
         <span class="dl-name"><b>arm64-v8a</b> <em>Recommended</em></span>
         <span class="dl-for">Almost every phone from 2017 onwards</span>
         <span class="dl-size"></span>
         <span class="dl-btn">Download</span>
       </a>
-      <a class="dl" data-abi="armeabi-v7a" href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-armeabi-v7a.apk">
+      <a class="dl" data-abi="armeabi-v7a" href="https://github.com/SanuSanal/gatekeeper/releases/latest">
         <span class="dl-name"><b>armeabi-v7a</b></span>
         <span class="dl-for">Older 32-bit phones</span>
         <span class="dl-size"></span>
         <span class="dl-btn">Download</span>
       </a>
-      <a class="dl" data-abi="x86_64" href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-x86_64.apk">
+      <a class="dl" data-abi="x86_64" href="https://github.com/SanuSanal/gatekeeper/releases/latest">
         <span class="dl-name"><b>x86_64</b></span>
         <span class="dl-for">Emulators and x86 devices</span>
         <span class="dl-size"></span>
@@ -466,8 +466,8 @@
 </footer>
 
 <script>
-  // The download links point at stable "latest" URLs and work without JavaScript.
-  // This only adds the version and file sizes, and handles "no release yet".
+  // Without JavaScript the buttons open the latest release page. With it, they point straight at
+  // the versioned APK of the latest release (gatekeeper-<version>-<abi>.apk) and show its size.
   const RELEASES = "https://github.com/SanuSanal/gatekeeper/releases";
   fetch("https://api.github.com/repos/SanuSanal/gatekeeper/releases/latest", { headers: { Accept: "application/vnd.github+json" } })
     .then(r => {
@@ -489,8 +489,8 @@
       const mb = n => (n / 1048576).toFixed(1) + " MB";
       document.querySelectorAll("[data-abi]").forEach(el => {
         const abi = el.dataset.abi;
-        const asset = (rel.assets || []).find(a => a.name === `gatekeeper-${abi}.apk`)
-          || (rel.assets || []).find(a => a.name.endsWith(`-${abi}.apk`));
+        const version = rel.tag_name.replace(/^v/, "");
+        const asset = (rel.assets || []).find(a => a.name === `gatekeeper-${version}-${abi}.apk`);
         if (!asset) return;
         el.href = asset.browser_download_url;
         const size = el.querySelector(".dl-size");
