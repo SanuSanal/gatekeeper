@@ -77,7 +77,7 @@ GateKeeper doesn't keep a service running or show a permanent notification while
 
 - Automatic gate call on arrival and departure, with delayed revalidation
 - Exact **SIM selection** on dual-SIM phones. If the chosen SIM is missing, it does **not** call and tells you; it never silently switches SIM
-- Map picker (OpenStreetMap), current location, or typed coordinates
+- Easy location picker: drag the map under a fixed pin, search an address, use your current location, or paste coordinates or a Google Maps link
 - Adjustable radius (100–1000 m), delay (1–30 s) and cooldown (1–30 min)
 - Toggles for Android Auto detection, Activity Recognition and the immediate arrival trigger
 - **Test mode** with an event simulator: same logic, never dials
@@ -114,7 +114,7 @@ Requirements: Android 11 or newer, Google Play services, a SIM that can make cal
    - Nearby devices and battery-optimisation exemption (recommended)
 2. **Settings → Gate phone number.** Emergency numbers are refused.
 3. **Settings → SIM for gate calls.**
-4. **Settings → Parking location:** tap the map at your spot, or use *my current location*. Adjust the radius if needed.
+4. **Settings → Parking location:** tap *my location* (or search an address), then drag the map until the pin sits on your spot. You can also paste coordinates or a Google Maps link. Adjust the radius if needed.
 5. **Settings → Car Bluetooth → Pair:** choose your car's head unit. It must already be paired in Android's Bluetooth settings.
 6. Turn on **Test mode**, press **Start monitoring**, and try a drive or the simulator buttons. Watch the **Activity** tab.
 7. When it behaves as expected, turn Test mode **off**.
@@ -142,7 +142,7 @@ You confirm every install in Android's own dialog. The first time, Android asks 
 | Nearby devices | Waking up when your car's Bluetooth connects |
 | Install apps | Self-update (only after you tap Install) |
 
-**Privacy:** no account, no backend, no analytics, no ads. Settings and logs never leave the phone. The only network requests are OpenStreetMap map tiles while the location picker is open, and an anonymous request to the GitHub Releases API for update checks. Phone numbers are masked in the UI and the log.
+**Privacy:** no account, no backend, no analytics, no ads. Settings and logs never leave the phone. The only network requests are OpenStreetMap map tiles while the location picker is open, the text you type into its address search (sent to Android's built-in geocoder, usually Google), and an anonymous request to the GitHub Releases API for update checks. Phone numbers are masked in the UI and the log.
 
 Full details: [docs/PERMISSIONS_AND_BATTERY.md](docs/PERMISSIONS_AND_BATTERY.md).
 

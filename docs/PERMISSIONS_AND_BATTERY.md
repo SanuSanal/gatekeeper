@@ -15,7 +15,7 @@ GateKeeper asks for each permission in context during onboarding, and again from
 
 ## Install-time permissions (no prompt)
 
-`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_CONNECTED_DEVICE`, `CHANGE_NETWORK_STATE` (connectedDevice prerequisite on Android 14+), `REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND`, `WAKE_LOCK` (only while a delayed trigger is pending), `RECEIVE_BOOT_COMPLETED`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, and `INTERNET` (map tiles in the location picker only).
+`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_CONNECTED_DEVICE`, `CHANGE_NETWORK_STATE` (connectedDevice prerequisite on Android 14+), `REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND`, `WAKE_LOCK` (only while a delayed trigger is pending), `RECEIVE_BOOT_COMPLETED`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, and `INTERNET` (map tiles and address search in the location picker, and update checks).
 
 ## Car pairing (companion device)
 

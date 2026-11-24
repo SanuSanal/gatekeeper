@@ -108,6 +108,11 @@ class FakePlatform implements GateKeeperPlatform {
   @override
   Future<LocationMessage?> getCurrentLocation() async => LocationMessage(latitude: 12.97, longitude: 77.59);
 
+  List<PlaceMessage> places = [PlaceMessage(label: 'Gate Road, Bengaluru', latitude: 12.9716, longitude: 77.5946)];
+
+  @override
+  Future<List<PlaceMessage>> searchPlaces(String query) async => places;
+
   @override
   Future<String?> associateCar() async => 'My Car';
 

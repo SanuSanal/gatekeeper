@@ -535,6 +535,51 @@ data class LocationMessage (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
+data class PlaceMessage (
+  val label: String,
+  val latitude: Double,
+  val longitude: Double
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PlaceMessage {
+      val label = pigeonVar_list[0] as String
+      val latitude = pigeonVar_list[1] as Double
+      val longitude = pigeonVar_list[2] as Double
+      return PlaceMessage(label, latitude, longitude)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      label,
+      latitude,
+      longitude,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as PlaceMessage
+    return GateKeeperApiPigeonUtils.deepEquals(this.label, other.label) && GateKeeperApiPigeonUtils.deepEquals(this.latitude, other.latitude) && GateKeeperApiPigeonUtils.deepEquals(this.longitude, other.longitude)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.label)
+    result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.latitude)
+    result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.longitude)
+    return result
+  }
+  override fun toString(): String {
+    return "PlaceMessage(label=$label, latitude=$latitude, longitude=$longitude)"
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
 data class StartResult (
   val started: Boolean,
   val problems: List<String>
@@ -655,10 +700,15 @@ private open class GateKeeperApiPigeonCodec : StandardMessageCodec() {
       }
       134.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          StartResult.fromList(it)
+          PlaceMessage.fromList(it)
         }
       }
       135.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          StartResult.fromList(it)
+        }
+      }
+      136.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
           AppInfoMessage.fromList(it)
         }
@@ -688,12 +738,16 @@ private open class GateKeeperApiPigeonCodec : StandardMessageCodec() {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is StartResult -> {
+      is PlaceMessage -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is AppInfoMessage -> {
+      is StartResult -> {
         stream.write(135)
+        writeValue(stream, value.toList())
+      }
+      is AppInfoMessage -> {
+        stream.write(136)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -716,6 +770,11 @@ interface GateKeeperHostApi {
   fun getLogs(limit: Long): List<LogEntryMessage>
   fun clearLogs()
   suspend fun getCurrentLocation(): LocationMessage?
+  /**
+   * Address / place search using Android's built-in Geocoder. Empty list if nothing found or
+   * no geocoder is available on the device.
+   */
+  suspend fun searchPlaces(query: String): List<PlaceMessage>
   /** Opens the system companion-device chooser. Returns the chosen device name, or null if cancelled. */
   suspend fun associateCar(): String?
   fun disassociateCar()
@@ -898,6 +957,25 @@ interface GateKeeperHostApi {
             CoroutineScope(Dispatchers.Main).launch {
               val wrapped: List<Any?> = try {
                 listOf(api.getCurrentLocation())
+              } catch (exception: Throwable) {
+                GateKeeperApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.searchPlaces$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val queryArg = args[0] as String
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.searchPlaces(queryArg))
               } catch (exception: Throwable) {
                 GateKeeperApiPigeonUtils.wrapError(exception)
               }

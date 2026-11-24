@@ -132,6 +132,14 @@ class LocationMessage {
   double? accuracyMeters;
 }
 
+class PlaceMessage {
+  PlaceMessage({required this.label, required this.latitude, required this.longitude});
+
+  String label;
+  double latitude;
+  double longitude;
+}
+
 class StartResult {
   StartResult({required this.started, required this.problems});
 
@@ -182,6 +190,11 @@ abstract class GateKeeperHostApi {
 
   @async
   LocationMessage? getCurrentLocation();
+
+  /// Address / place search using Android's built-in Geocoder. Empty list if nothing found or
+  /// no geocoder is available on the device.
+  @async
+  List<PlaceMessage> searchPlaces(String query);
 
   /// Opens the system companion-device chooser. Returns the chosen device name, or null if cancelled.
   @async

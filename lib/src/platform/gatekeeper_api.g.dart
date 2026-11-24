@@ -516,6 +516,61 @@ class LocationMessage {
   }
 }
 
+class PlaceMessage {
+  PlaceMessage({
+    required this.label,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  String label;
+
+  double latitude;
+
+  double longitude;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      label,
+      latitude,
+      longitude,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static PlaceMessage decode(Object result) {
+    result as List<Object?>;
+    return PlaceMessage(
+      label: result[0]! as String,
+      latitude: result[1]! as double,
+      longitude: result[2]! as double,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! PlaceMessage || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(label, other.label) && _deepEquals(latitude, other.latitude) && _deepEquals(longitude, other.longitude);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'PlaceMessage(label: $label, latitude: $latitude, longitude: $longitude)';
+  }
+}
+
 class StartResult {
   StartResult({
     required this.started,
@@ -651,11 +706,14 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is LocationMessage) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    }    else if (value is StartResult) {
+    }    else if (value is PlaceMessage) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    }    else if (value is AppInfoMessage) {
+    }    else if (value is StartResult) {
       buffer.putUint8(135);
+      writeValue(buffer, value.encode());
+    }    else if (value is AppInfoMessage) {
+      buffer.putUint8(136);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -676,8 +734,10 @@ class _PigeonCodec extends StandardMessageCodec {
       case 133:
         return LocationMessage.decode(readValue(buffer)!);
       case 134:
-        return StartResult.decode(readValue(buffer)!);
+        return PlaceMessage.decode(readValue(buffer)!);
       case 135:
+        return StartResult.decode(readValue(buffer)!);
+      case 136:
         return AppInfoMessage.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -879,6 +939,26 @@ class GateKeeperHostApi {
     )
     ;
     return pigeonVar_replyValue as LocationMessage?;
+  }
+
+  /// Address / place search using Android's built-in Geocoder. Empty list if nothing found or
+  /// no geocoder is available on the device.
+  Future<List<PlaceMessage>> searchPlaces(String query) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.searchPlaces$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[query]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return (pigeonVar_replyValue! as List<Object?>).cast<PlaceMessage>();
   }
 
   /// Opens the system companion-device chooser. Returns the chosen device name, or null if cancelled.

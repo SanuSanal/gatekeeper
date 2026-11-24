@@ -342,8 +342,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
               child: Text(
                 'GateKeeper stores everything on this device only. No account, no analytics, no backend. '
-                'Map tiles are loaded from OpenStreetMap only while the location picker is open; '
-                'update checks call the public GitHub releases API.',
+                'Map tiles are loaded from OpenStreetMap only while the location picker is open, and address '
+                'search uses Android’s built-in geocoder; update checks call the public GitHub releases API.',
               ),
             ),
           ],

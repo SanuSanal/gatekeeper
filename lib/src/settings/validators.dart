@@ -39,6 +39,31 @@ abstract final class Validators {
     return null;
   }
 
+  static final _maps = [
+    RegExp(r'@(-?\d{1,2}(?:\.\d+)?),(-?\d{1,3}(?:\.\d+)?)'), // google.com/maps/.../@lat,lng,17z
+    RegExp(r'[?&](?:q|query|ll|destination|center)=(-?\d{1,2}(?:\.\d+)?)(?:,|%2C)\s*(-?\d{1,3}(?:\.\d+)?)'),
+    RegExp(r'geo:(-?\d{1,2}(?:\.\d+)?),(-?\d{1,3}(?:\.\d+)?)'),
+  ];
+  static final _pair = RegExp(r'(-?\d{1,2}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)');
+
+  /// Finds a latitude/longitude pair in free text: "12.97, 77.59", "12.97 77.59", a Google Maps
+  /// link (…/@12.97,77.59,17z or ?q=12.97,77.59) or a geo: URI. Returns null if none is valid.
+  static (double, double)? parseCoordinates(String input) {
+    final text = input.trim();
+    if (text.isEmpty) return null;
+    for (final re in [..._maps, _pair]) {
+      for (final m in re.allMatches(text)) {
+        final lat = double.tryParse(m.group(1)!);
+        final lng = double.tryParse(m.group(2)!);
+        if (lat == null || lng == null) continue;
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) continue;
+        if (lat == 0 && lng == 0) continue;
+        return (lat, lng);
+      }
+    }
+    return null;
+  }
+
   static int clampRadius(num v) => v.round().clamp(Limits.radiusMin, Limits.radiusMax);
   static int clampDelay(num v) => v.round().clamp(Limits.delayMin, Limits.delayMax);
   static int clampCooldown(num v) => v.round().clamp(Limits.cooldownMin, Limits.cooldownMax);

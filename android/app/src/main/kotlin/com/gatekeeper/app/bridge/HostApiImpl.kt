@@ -186,6 +186,41 @@ class HostApiImpl(
         return loc?.let { LocationMessage(it.latitude, it.longitude, if (it.hasAccuracy()) it.accuracy.toDouble() else null) }
     }
 
+    override suspend fun searchPlaces(query: String): List<PlaceMessage> {
+        val q = query.trim()
+        if (q.length < 3 || !android.location.Geocoder.isPresent()) return emptyList()
+        val geocoder = android.location.Geocoder(activity)
+        val addresses: List<android.location.Address> = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                withTimeoutOrNull(15_000) {
+                    kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+                        geocoder.getFromLocationName(q, 6, object : android.location.Geocoder.GeocodeListener {
+                            override fun onGeocode(addresses: MutableList<android.location.Address>) {
+                                if (cont.isActive) cont.resumeWith(Result.success(addresses.toList()))
+                            }
+
+                            override fun onError(errorMessage: String?) {
+                                if (cont.isActive) cont.resumeWith(Result.success(emptyList()))
+                            }
+                        })
+                    }
+                } ?: emptyList()
+            } else {
+                kotlinx.coroutines.withContext(Dispatchers.IO) {
+                    @Suppress("DEPRECATION")
+                    geocoder.getFromLocationName(q, 6).orEmpty()
+                }
+            }
+        } catch (e: java.io.IOException) {
+            throw FlutterError("search_failed", "Address search needs an internet connection", null)
+        }
+        return addresses.filter { it.hasLatitude() && it.hasLongitude() }.map { a ->
+            val label = (0..a.maxAddressLineIndex).mapNotNull { a.getAddressLine(it) }.joinToString(", ")
+                .ifBlank { listOfNotNull(a.featureName, a.locality, a.countryName).joinToString(", ") }
+            PlaceMessage(label = label.ifBlank { "%.5f, %.5f".format(a.latitude, a.longitude) }, latitude = a.latitude, longitude = a.longitude)
+        }
+    }
+
     // ---- car association ----------------------------------------------------------------------
 
     override suspend fun associateCar(): String? {

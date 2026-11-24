@@ -7,6 +7,7 @@ export 'gatekeeper_api.g.dart'
         AppInfoMessage,
         LogEntryMessage,
         LocationMessage,
+        PlaceMessage,
         SettingsMessage,
         SimCardMessage,
         StartResult,
@@ -24,6 +25,7 @@ abstract class GateKeeperPlatform {
   Future<List<LogEntryMessage>> getLogs(int limit);
   Future<void> clearLogs();
   Future<LocationMessage?> getCurrentLocation();
+  Future<List<PlaceMessage>> searchPlaces(String query);
   Future<String?> associateCar();
   Future<void> disassociateCar();
   Future<void> simulateEvent(String event);
@@ -103,6 +105,9 @@ class PigeonGateKeeperPlatform implements GateKeeperPlatform, GateKeeperFlutterA
 
   @override
   Future<LocationMessage?> getCurrentLocation() => _api.getCurrentLocation();
+
+  @override
+  Future<List<PlaceMessage>> searchPlaces(String query) => _api.searchPlaces(query);
 
   @override
   Future<String?> associateCar() => _api.associateCar();
