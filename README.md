@@ -196,7 +196,7 @@ The workflow:
 4. verifies each APK is signed with the GateKeeper key
 5. publishes a GitHub Release with the APKs and `SHA256SUMS.txt`
 
-Signing uses four repository secrets: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD`. Locally, the keystore lives in the gitignored `keys/` folder. **Back it up.** Losing it means existing installs can't be updated.
+Signing uses four repository secrets (upload them from your local `keys/` folder with `.	oolset-release-secrets.ps1`): `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD`. Locally, the keystore lives in the gitignored `keys/` folder. **Back it up.** Losing it means existing installs can't be updated.
 
 ## Project structure
 
