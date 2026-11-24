@@ -194,11 +194,13 @@ git push origin v1.2.0
 
 The workflow:
 
-1. checks the tag is `vMAJOR.MINOR.PATCH`
-2. runs the Dart and Kotlin unit tests
-3. builds **signed per-ABI APKs** (`--split-per-abi`, version name from the tag, build number from the run number)
-4. verifies each APK is signed with the GateKeeper key
-5. publishes a GitHub Release with the APKs and `SHA256SUMS.txt`
+1. checks the tag is `vMAJOR.MINOR.PATCH` (MINOR and PATCH 0–99) and that no release exists for it yet
+2. runs the Dart and Kotlin unit tests (the signing key isn't on the runner yet)
+3. restores the signing key and builds **signed per-ABI APKs** (`--split-per-abi`). The version name comes from the tag, and the build number is `MAJOR×10000 + MINOR×100 + PATCH`, so it always rises with the version (Flutter adds `ABI×1000` per APK)
+4. verifies each APK is signed with exactly the GateKeeper release certificate (SHA-256 fingerprint pinned in the workflow)
+5. publishes a GitHub Release with one APK per ABI (`gatekeeper-<version>-<abi>.apk`) and `SHA256SUMS.txt`
+
+Keep `MINOR` and `PATCH` below 100 and never reuse or lower a version: installed apps only accept updates with a higher version code.
 
 Signing uses four repository secrets (upload them from your local `keys/` folder with `.\tool\set-release-secrets.ps1`): `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD`. Locally, the keystore lives in the gitignored `keys/` folder. **Back it up.** Losing it means existing installs can't be updated.
 

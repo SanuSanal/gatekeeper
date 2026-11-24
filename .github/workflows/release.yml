@@ -7,6 +7,9 @@
 #   ANDROID_KEYSTORE_PASSWORD
 #   ANDROID_KEY_ALIAS
 #   ANDROID_KEY_PASSWORD
+#
+# Version code: MAJOR*10000 + MINOR*100 + PATCH (Flutter adds ABI*1000 per split APK), so it is
+# deterministic and always increases with the tag. MINOR and PATCH must stay below 100.
 name: Release
 
 on:
@@ -28,27 +31,44 @@ jobs:
     timeout-minutes: 45
     env:
       FLUTTER_VERSION: "3.47.5"
+      # SHA-256 of the GateKeeper release signing certificate (public; not a secret). Installed apps
+      # only accept updates signed by this exact certificate, so a release signed otherwise must fail.
+      EXPECTED_CERT_SHA256: "f8eeef83d56847a1d80c36905faf0d90c9068947cf0036c68acaa327ec00db82"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Derive version from tag
+      - name: Derive version and build number from tag
         id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${GITHUB_REF_NAME}"
           VERSION="${TAG#v}"
-          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if ! [[ "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
             echo "::error::Tag '$TAG' is not of the form vMAJOR.MINOR.PATCH"
             exit 1
           fi
+          MAJOR=$((10#${BASH_REMATCH[1]})); MINOR=$((10#${BASH_REMATCH[2]})); PATCH=$((10#${BASH_REMATCH[3]}))
+          if [ "$MINOR" -gt 99 ] || [ "$PATCH" -gt 99 ]; then
+            echo "::error::MINOR and PATCH must be 0-99 to keep version codes increasing"
+            exit 1
+          fi
+          BUILD=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::A release for $TAG already exists. Delete it first or push a new version tag."
+            exit 1
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Building GateKeeper $VERSION (build ${GITHUB_RUN_NUMBER})"
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "Building GateKeeper $VERSION (build number $BUILD)"
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -56,6 +76,14 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run unit tests
+        run: |
+          flutter test
+          cd android && ./gradlew --no-daemon :app:testDebugUnitTest
 
       - name: Restore signing key
         env:
@@ -77,21 +105,13 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > keys/key.properties
 
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Run unit tests
-        run: |
-          flutter test
-          cd android && ./gradlew --no-daemon :app:testDebugUnitTest
-
       - name: Build per-ABI release APKs
         env:
           REQUIRE_RELEASE_SIGNING: "true"
         run: >
           flutter build apk --release --split-per-abi
           --build-name=${{ steps.version.outputs.version }}
-          --build-number=${{ github.run_number }}
+          --build-number=${{ steps.version.outputs.build }}
 
       - name: Verify signatures and collect artifacts
         id: collect
