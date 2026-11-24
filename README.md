@@ -86,6 +86,14 @@ GateKeeper doesn't keep a service running or show a permanent notification while
 
 ## Install
 
+**Direct download (latest version):**
+[arm64-v8a (most phones)](https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-arm64-v8a.apk) ·
+[armeabi-v7a](https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-armeabi-v7a.apk) ·
+[x86_64](https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-x86_64.apk) ·
+[SHA256SUMS](https://github.com/SanuSanal/gatekeeper/releases/latest/download/SHA256SUMS.txt)
+
+Or step by step:
+
 1. On your phone, open the **[latest release](https://github.com/SanuSanal/gatekeeper/releases/latest)**.
 2. Download the APK for your phone. If unsure, pick **arm64-v8a**: it covers almost every phone from 2017 onwards.
 

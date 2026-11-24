@@ -181,6 +181,30 @@
   tr:last-child td { border-bottom: 0; }
   code { font: 500 14px var(--mono); background: var(--surface-2); padding: 2px 6px; border-radius: 6px; }
   .table-scroll { overflow-x: auto; }
+  .hint { margin-top: 12px; color: var(--muted); font-size: 14px; }
+
+  /* direct downloads */
+  .downloads { margin-top: 26px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .dl-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; padding: 18px 20px; background: var(--surface-2); }
+  .dl-head span { color: var(--muted); font-size: 14px; }
+  .dl-head #dl-version { font: 500 14px var(--mono); color: var(--green); }
+  .dl { display: grid; grid-template-columns: 180px 1fr auto auto; align-items: center; gap: 12px 18px; padding: 16px 20px;
+    border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; transition: background .15s; }
+  .dl:hover { background: color-mix(in srgb, var(--green) 7%, transparent); }
+  .dl-name b { font: 500 15px var(--mono); }
+  .dl-name em { font-style: normal; font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    background: var(--green); color: var(--green-ink); padding: 3px 7px; border-radius: 999px; margin-left: 6px; }
+  .dl-for { color: var(--muted); font-size: 15px; }
+  .dl-size { color: var(--muted); font: 500 13px var(--mono); }
+  .dl-btn { font-weight: 600; font-size: 15px; padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--bg); white-space: nowrap; }
+  .dl.recommended .dl-btn { background: var(--green); border-color: var(--green); color: var(--green-ink); }
+  .dl.disabled { pointer-events: none; opacity: .55; }
+  .dl-foot { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 14px 20px; border-top: 1px solid var(--line); font-size: 14px; }
+  @media (max-width: 640px) {
+    .dl { grid-template-columns: 1fr auto; }
+    .dl-for { grid-column: 1 / -1; grid-row: 2; }
+    .dl-size { display: none; }
+  }
 
   /* honest */
   .honest { border: 1.5px dashed var(--line); border-radius: var(--radius); padding: 28px; display: grid; grid-template-columns: 220px 1fr; gap: 28px; }
@@ -222,12 +246,13 @@
       <h1>The gate opens <em>before you reach it.</em></h1>
       <p class="lede">GateKeeper rings your call-to-open gate automatically when you drive up to your parking spot, or pull away from it. Exactly once, from the right SIM.</p>
       <div class="cta">
-        <a class="btn btn-primary" id="download" href="https://github.com/SanuSanal/gatekeeper/releases/latest">
+        <a class="btn btn-primary" id="download" data-abi="arm64-v8a" href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-arm64-v8a.apk">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
           Download APK <small id="version"></small>
         </a>
-        <a class="btn btn-ghost" href="https://github.com/SanuSanal/gatekeeper">View source</a>
+        <a class="btn btn-ghost" href="#install">Other versions</a>
       </div>
+      <p class="hint" id="hero-hint">Direct download for most phones (64-bit ARM, Android 11+).</p>
       <div class="meta"><span>Android 11+</span><span>No account</span><span>No tracking</span><span>Dual-SIM aware</span></div>
     </div>
     <div class="scene" aria-hidden="true">
@@ -367,17 +392,35 @@
       <div class="step"><h3>Configure</h3><p>Gate number, SIM, parking spot on the map, radius. Pair your car's Bluetooth.</p></div>
       <div class="step"><h3>Test, then go</h3><p>Start monitoring in test mode, check the activity log, then turn test mode off.</p></div>
     </div>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>APK</th><th>For</th></tr></thead>
-        <tbody>
-          <tr><td><code>gatekeeper-X.Y.Z-arm64-v8a.apk</code></td><td>Almost every phone from 2017 onwards</td></tr>
-          <tr><td><code>gatekeeper-X.Y.Z-armeabi-v7a.apk</code></td><td>Older 32-bit phones</td></tr>
-          <tr><td><code>gatekeeper-X.Y.Z-x86_64.apk</code></td><td>Emulators and x86 devices</td></tr>
-        </tbody>
-      </table>
+    <div class="downloads" id="downloads">
+      <div class="dl-head">
+        <h3>Download <span id="dl-version"></span></h3>
+        <span id="dl-status">Direct links to the latest signed release.</span>
+      </div>
+      <a class="dl recommended" data-abi="arm64-v8a" href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-arm64-v8a.apk">
+        <span class="dl-name"><b>arm64-v8a</b> <em>Recommended</em></span>
+        <span class="dl-for">Almost every phone from 2017 onwards</span>
+        <span class="dl-size"></span>
+        <span class="dl-btn">Download</span>
+      </a>
+      <a class="dl" data-abi="armeabi-v7a" href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-armeabi-v7a.apk">
+        <span class="dl-name"><b>armeabi-v7a</b></span>
+        <span class="dl-for">Older 32-bit phones</span>
+        <span class="dl-size"></span>
+        <span class="dl-btn">Download</span>
+      </a>
+      <a class="dl" data-abi="x86_64" href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/gatekeeper-x86_64.apk">
+        <span class="dl-name"><b>x86_64</b></span>
+        <span class="dl-for">Emulators and x86 devices</span>
+        <span class="dl-size"></span>
+        <span class="dl-btn">Download</span>
+      </a>
+      <div class="dl-foot">
+        <a href="https://github.com/SanuSanal/gatekeeper/releases/latest/download/SHA256SUMS.txt">SHA256SUMS.txt</a>
+        <a href="https://github.com/SanuSanal/gatekeeper/releases">All releases &amp; notes</a>
+      </div>
     </div>
-    <p style="margin-top:16px;color:var(--muted);font-size:15px">In-app updates are verified before installing: GitHub's SHA-256 checksum, the same package, a newer version and the same signing certificate. You confirm every install in Android's own dialog.</p>
+    <p style="margin-top:16px;color:var(--muted);font-size:15px">Open the downloaded file on your phone and allow your browser to "install unknown apps" when Android asks. In-app updates are verified before installing: GitHub's SHA-256 checksum, the same package, a newer version and the same signing certificate. You confirm every install in Android's own dialog.</p>
   </div>
 </section>
 
@@ -423,14 +466,36 @@
 </footer>
 
 <script>
-  // Show the latest version on the download button; the link works without it.
+  // The download links point at stable "latest" URLs and work without JavaScript.
+  // This only adds the version and file sizes, and handles "no release yet".
+  const RELEASES = "https://github.com/SanuSanal/gatekeeper/releases";
   fetch("https://api.github.com/repos/SanuSanal/gatekeeper/releases/latest", { headers: { Accept: "application/vnd.github+json" } })
-    .then(r => (r.ok ? r.json() : null))
+    .then(r => {
+      if (r.status === 404) return { none: true };
+      return r.ok ? r.json() : null;
+    })
     .then(rel => {
-      if (!rel || !rel.tag_name) return;
+      if (!rel) return;
+      if (rel.none) {
+        document.getElementById("dl-status").textContent = "The first release is being prepared. Check back soon.";
+        document.querySelectorAll(".dl").forEach(a => a.classList.add("disabled"));
+        const hero = document.getElementById("download");
+        hero.href = RELEASES;
+        document.getElementById("hero-hint").textContent = "The first release is coming soon.";
+        return;
+      }
       document.getElementById("version").textContent = rel.tag_name;
-      const apk = (rel.assets || []).find(a => /arm64-v8a\.apk$/.test(a.name));
-      if (apk) document.getElementById("download").href = apk.browser_download_url;
+      document.getElementById("dl-version").textContent = rel.tag_name;
+      const mb = n => (n / 1048576).toFixed(1) + " MB";
+      document.querySelectorAll("[data-abi]").forEach(el => {
+        const abi = el.dataset.abi;
+        const asset = (rel.assets || []).find(a => a.name === `gatekeeper-${abi}.apk`)
+          || (rel.assets || []).find(a => a.name.endsWith(`-${abi}.apk`));
+        if (!asset) return;
+        el.href = asset.browser_download_url;
+        const size = el.querySelector(".dl-size");
+        if (size) size.textContent = mb(asset.size);
+      });
     })
     .catch(() => {});
 </script>
