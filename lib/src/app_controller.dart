@@ -67,16 +67,15 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String?> associateCar() async {
-    final name = await platform.associateCar();
+  Future<void> selectCar(BluetoothDeviceMessage device) async {
+    await platform.selectCar(device.address, device.name);
     settings = await settingsRepository.load();
     status = await platform.getStatus();
     notifyListeners();
-    return name;
   }
 
-  Future<void> disassociateCar() async {
-    await platform.disassociateCar();
+  Future<void> clearCar() async {
+    await platform.clearCar();
     settings = await settingsRepository.load();
     status = await platform.getStatus();
     notifyListeners();

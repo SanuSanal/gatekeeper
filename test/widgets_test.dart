@@ -118,4 +118,21 @@ void main() {
     await pumpApp(tester, setup: (p) => p.settings.onboardingComplete = false);
     expect(find.text('Welcome to GateKeeper'), findsOneWidget);
   });
+
+  testWidgets('car picker lists paired devices by name, cars first, and selects one', (tester) async {
+    final platform = await pumpApp(tester);
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Choose'), 300, scrollable: find.byType(Scrollable).last);
+    await tester.tap(find.text('Choose'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose your car'), findsOneWidget);
+    final car = tester.getTopLeft(find.text('My Car'));
+    final buds = tester.getTopLeft(find.text('Galaxy Buds'));
+    expect(car.dy, lessThan(buds.dy), reason: 'car-like devices are listed first');
+    expect(find.textContaining('Car audio'), findsOneWidget);
+    await tester.tap(find.text('My Car'));
+    await tester.pumpAndSettle();
+    expect(platform.selectedCar, 'AA:BB:CC:DD:EE:FF');
+  });
 }

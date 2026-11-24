@@ -46,7 +46,7 @@ class SettingsMessage {
   bool activityRecognitionEnabled;
   bool testMode;
 
-  /// Read-only on save: car association is managed via associateCar/disassociateCar.
+  /// Read-only on save: the car is chosen with selectCar/clearCar. True when a car is selected.
   String? carDeviceName;
   bool carDeviceAssociated;
   bool onboardingComplete;
@@ -132,6 +132,23 @@ class LocationMessage {
   double? accuracyMeters;
 }
 
+class BluetoothDeviceMessage {
+  BluetoothDeviceMessage({
+    required this.name,
+    required this.address,
+    required this.carLike,
+    required this.selected,
+  });
+
+  /// User-visible name (the alias set in Bluetooth settings, or the device name).
+  String name;
+  String address;
+
+  /// Bluetooth class says car audio / hands-free (likely a car head unit).
+  bool carLike;
+  bool selected;
+}
+
 class PlaceMessage {
   PlaceMessage({required this.label, required this.latitude, required this.longitude});
 
@@ -196,11 +213,17 @@ abstract class GateKeeperHostApi {
   @async
   List<PlaceMessage> searchPlaces(String query);
 
-  /// Opens the system companion-device chooser. Returns the chosen device name, or null if cancelled.
-  @async
-  String? associateCar();
+  /// Bluetooth devices paired with this phone, cars first. Throws FlutterError "permission"
+  /// (Nearby devices not granted) or "bluetooth_off".
+  List<BluetoothDeviceMessage> listPairedDevices();
 
-  void disassociateCar();
+  /// Chooses the car whose Bluetooth connection wakes GateKeeper.
+  void selectCar(String address, String name);
+
+  /// Forgets the chosen car.
+  void clearCar();
+
+  void openBluetoothSettings();
 
   /// Test mode only: injects a synthetic event ("enter", "exit", "vehicle_on", "vehicle_off",
   /// "aa_on", "aa_off", "bt_on", "bt_off"). Rejected when test mode is off.

@@ -200,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.bluetooth_rounded,
                     label: 'Car Bluetooth',
                     value: !c.settings.carDeviceAssociated
-                        ? 'Not paired'
+                        ? 'Not chosen'
                         : (s?.carBluetoothConnected == true ? 'Connected' : 'Not connected'),
                     detail: c.settings.carDeviceAssociated ? c.settings.carDeviceName : null,
                     active: s?.carBluetoothConnected == true,

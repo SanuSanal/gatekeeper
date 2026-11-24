@@ -27,10 +27,11 @@ object Problem {
     // Warnings (do not block monitoring)
     const val NOTIFICATION_PERMISSION = "NOTIFICATION_PERMISSION"
     const val BLUETOOTH_PERMISSION = "BLUETOOTH_PERMISSION"
-    const val CAR_NOT_ASSOCIATED = "CAR_NOT_ASSOCIATED"
+    const val CAR_NOT_SELECTED = "CAR_NOT_SELECTED"
+    const val CAR_WAKE_BLOCKED = "CAR_WAKE_BLOCKED"
     const val BATTERY_OPTIMIZED = "BATTERY_OPTIMIZED"
 
-    val WARNINGS = setOf(NOTIFICATION_PERMISSION, BLUETOOTH_PERMISSION, CAR_NOT_ASSOCIATED, BATTERY_OPTIMIZED)
+    val WARNINGS = setOf(NOTIFICATION_PERMISSION, BLUETOOTH_PERMISSION, CAR_NOT_SELECTED, CAR_WAKE_BLOCKED, BATTERY_OPTIMIZED)
 }
 
 object PermissionMonitor {
@@ -57,7 +58,11 @@ object PermissionMonitor {
     }
 
     /** All problems, blocking first. Test mode does not require phone permission, number or SIM. */
-    fun problems(c: Context, config: AppConfig, sims: SimRepository, carAssociated: Boolean): List<String> {
+    /**
+     * @param carCompanionAssociated the chosen car still has a companion association from an older
+     *   version (exempts background starts the same way battery-optimisation exemption does).
+     */
+    fun problems(c: Context, config: AppConfig, sims: SimRepository, carCompanionAssociated: Boolean): List<String> {
         val p = mutableListOf<String>()
         if (!config.hasLocation) p += Problem.LOCATION_NOT_SET
         if (!foregroundLocationOk(c)) p += Problem.LOCATION_PERMISSION
@@ -71,11 +76,21 @@ object PermissionMonitor {
             else if (phoneOk(c) && sims.findPhoneAccount(config.simSubscriptionId) == null) p += Problem.SIM_UNAVAILABLE
         }
         if (!notificationsOk(c)) p += Problem.NOTIFICATION_PERMISSION
+        val batteryExempt = ignoringBatteryOptimizations(c)
+        var carWakeBlocked = false
         if (config.androidAutoEnabled) {
-            if (!carAssociated) p += Problem.CAR_NOT_ASSOCIATED
-            else if (!bluetoothOk(c)) p += Problem.BLUETOOTH_PERMISSION
+            when {
+                config.carDeviceAddress == null -> p += Problem.CAR_NOT_SELECTED
+                !bluetoothOk(c) -> p += Problem.BLUETOOTH_PERMISSION
+                // Waking from the car's Bluetooth connection starts a short foreground service from the
+                // background, which Android only allows for exempt apps.
+                !batteryExempt && !carCompanionAssociated -> {
+                    p += Problem.CAR_WAKE_BLOCKED
+                    carWakeBlocked = true
+                }
+            }
         }
-        if (!ignoringBatteryOptimizations(c)) p += Problem.BATTERY_OPTIMIZED
+        if (!batteryExempt && !carWakeBlocked) p += Problem.BATTERY_OPTIMIZED
         return p
     }
 

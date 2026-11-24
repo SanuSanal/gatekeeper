@@ -151,7 +151,7 @@ class SettingsMessage {
 
   bool testMode;
 
-  /// Read-only on save: car association is managed via associateCar/disassociateCar.
+  /// Read-only on save: the car is chosen with selectCar/clearCar. True when a car is selected.
   String? carDeviceName;
 
   bool carDeviceAssociated;
@@ -516,6 +516,68 @@ class LocationMessage {
   }
 }
 
+class BluetoothDeviceMessage {
+  BluetoothDeviceMessage({
+    required this.name,
+    required this.address,
+    required this.carLike,
+    required this.selected,
+  });
+
+  /// User-visible name (the alias set in Bluetooth settings, or the device name).
+  String name;
+
+  String address;
+
+  /// Bluetooth class says car audio / hands-free (likely a car head unit).
+  bool carLike;
+
+  bool selected;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      name,
+      address,
+      carLike,
+      selected,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static BluetoothDeviceMessage decode(Object result) {
+    result as List<Object?>;
+    return BluetoothDeviceMessage(
+      name: result[0]! as String,
+      address: result[1]! as String,
+      carLike: result[2]! as bool,
+      selected: result[3]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! BluetoothDeviceMessage || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(name, other.name) && _deepEquals(address, other.address) && _deepEquals(carLike, other.carLike) && _deepEquals(selected, other.selected);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'BluetoothDeviceMessage(name: $name, address: $address, carLike: $carLike, selected: $selected)';
+  }
+}
+
 class PlaceMessage {
   PlaceMessage({
     required this.label,
@@ -706,14 +768,17 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is LocationMessage) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    }    else if (value is PlaceMessage) {
+    }    else if (value is BluetoothDeviceMessage) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    }    else if (value is StartResult) {
+    }    else if (value is PlaceMessage) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    }    else if (value is AppInfoMessage) {
+    }    else if (value is StartResult) {
       buffer.putUint8(136);
+      writeValue(buffer, value.encode());
+    }    else if (value is AppInfoMessage) {
+      buffer.putUint8(137);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -734,10 +799,12 @@ class _PigeonCodec extends StandardMessageCodec {
       case 133:
         return LocationMessage.decode(readValue(buffer)!);
       case 134:
-        return PlaceMessage.decode(readValue(buffer)!);
+        return BluetoothDeviceMessage.decode(readValue(buffer)!);
       case 135:
-        return StartResult.decode(readValue(buffer)!);
+        return PlaceMessage.decode(readValue(buffer)!);
       case 136:
+        return StartResult.decode(readValue(buffer)!);
+      case 137:
         return AppInfoMessage.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -961,9 +1028,10 @@ class GateKeeperHostApi {
     return (pigeonVar_replyValue! as List<Object?>).cast<PlaceMessage>();
   }
 
-  /// Opens the system companion-device chooser. Returns the chosen device name, or null if cancelled.
-  Future<String?> associateCar() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.associateCar$pigeonVar_messageChannelSuffix';
+  /// Bluetooth devices paired with this phone, cars first. Throws FlutterError "permission"
+  /// (Nearby devices not granted) or "bluetooth_off".
+  Future<List<BluetoothDeviceMessage>> listPairedDevices() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.listPairedDevices$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -974,14 +1042,50 @@ class GateKeeperHostApi {
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
         pigeonVar_replyList,
         pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return (pigeonVar_replyValue! as List<Object?>).cast<BluetoothDeviceMessage>();
+  }
+
+  /// Chooses the car whose Bluetooth connection wakes GateKeeper.
+  Future<void> selectCar(String address, String name) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.selectCar$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[address, name]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
         isNullValid: true,
     )
     ;
-    return pigeonVar_replyValue as String?;
   }
 
-  Future<void> disassociateCar() async {
-    final pigeonVar_channelName = 'dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.disassociateCar$pigeonVar_messageChannelSuffix';
+  /// Forgets the chosen car.
+  Future<void> clearCar() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.clearCar$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: true,
+    )
+    ;
+  }
+
+  Future<void> openBluetoothSettings() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.openBluetoothSettings$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

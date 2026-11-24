@@ -216,7 +216,7 @@ data class SettingsMessage (
   val androidAutoEnabled: Boolean,
   val activityRecognitionEnabled: Boolean,
   val testMode: Boolean,
-  /** Read-only on save: car association is managed via associateCar/disassociateCar. */
+  /** Read-only on save: the car is chosen with selectCar/clearCar. True when a car is selected. */
   val carDeviceName: String? = null,
   val carDeviceAssociated: Boolean,
   val onboardingComplete: Boolean
@@ -535,6 +535,57 @@ data class LocationMessage (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
+data class BluetoothDeviceMessage (
+  /** User-visible name (the alias set in Bluetooth settings, or the device name). */
+  val name: String,
+  val address: String,
+  /** Bluetooth class says car audio / hands-free (likely a car head unit). */
+  val carLike: Boolean,
+  val selected: Boolean
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): BluetoothDeviceMessage {
+      val name = pigeonVar_list[0] as String
+      val address = pigeonVar_list[1] as String
+      val carLike = pigeonVar_list[2] as Boolean
+      val selected = pigeonVar_list[3] as Boolean
+      return BluetoothDeviceMessage(name, address, carLike, selected)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      name,
+      address,
+      carLike,
+      selected,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as BluetoothDeviceMessage
+    return GateKeeperApiPigeonUtils.deepEquals(this.name, other.name) && GateKeeperApiPigeonUtils.deepEquals(this.address, other.address) && GateKeeperApiPigeonUtils.deepEquals(this.carLike, other.carLike) && GateKeeperApiPigeonUtils.deepEquals(this.selected, other.selected)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.name)
+    result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.address)
+    result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.carLike)
+    result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.selected)
+    return result
+  }
+  override fun toString(): String {
+    return "BluetoothDeviceMessage(name=$name, address=$address, carLike=$carLike, selected=$selected)"
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
 data class PlaceMessage (
   val label: String,
   val latitude: Double,
@@ -700,15 +751,20 @@ private open class GateKeeperApiPigeonCodec : StandardMessageCodec() {
       }
       134.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          PlaceMessage.fromList(it)
+          BluetoothDeviceMessage.fromList(it)
         }
       }
       135.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
-          StartResult.fromList(it)
+          PlaceMessage.fromList(it)
         }
       }
       136.toByte() -> {
+        (readValue(buffer) as? List<Any?>)?.let {
+          StartResult.fromList(it)
+        }
+      }
+      137.toByte() -> {
         (readValue(buffer) as? List<Any?>)?.let {
           AppInfoMessage.fromList(it)
         }
@@ -738,16 +794,20 @@ private open class GateKeeperApiPigeonCodec : StandardMessageCodec() {
         stream.write(133)
         writeValue(stream, value.toList())
       }
-      is PlaceMessage -> {
+      is BluetoothDeviceMessage -> {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is StartResult -> {
+      is PlaceMessage -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is AppInfoMessage -> {
+      is StartResult -> {
         stream.write(136)
+        writeValue(stream, value.toList())
+      }
+      is AppInfoMessage -> {
+        stream.write(137)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -775,9 +835,16 @@ interface GateKeeperHostApi {
    * no geocoder is available on the device.
    */
   suspend fun searchPlaces(query: String): List<PlaceMessage>
-  /** Opens the system companion-device chooser. Returns the chosen device name, or null if cancelled. */
-  suspend fun associateCar(): String?
-  fun disassociateCar()
+  /**
+   * Bluetooth devices paired with this phone, cars first. Throws FlutterError "permission"
+   * (Nearby devices not granted) or "bluetooth_off".
+   */
+  fun listPairedDevices(): List<BluetoothDeviceMessage>
+  /** Chooses the car whose Bluetooth connection wakes GateKeeper. */
+  fun selectCar(address: String, name: String)
+  /** Forgets the chosen car. */
+  fun clearCar()
+  fun openBluetoothSettings()
   /**
    * Test mode only: injects a synthetic event ("enter", "exit", "vehicle_on", "vehicle_off",
    * "aa_on", "aa_off", "bt_on", "bt_off"). Rejected when test mode is off.
@@ -987,28 +1054,61 @@ interface GateKeeperHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.associateCar$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.listPairedDevices$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            CoroutineScope(Dispatchers.Main).launch {
-              val wrapped: List<Any?> = try {
-                listOf(api.associateCar())
-              } catch (exception: Throwable) {
-                GateKeeperApiPigeonUtils.wrapError(exception)
-              }
-              reply.reply(wrapped)
+            val wrapped: List<Any?> = try {
+              listOf(api.listPairedDevices())
+            } catch (exception: Throwable) {
+              GateKeeperApiPigeonUtils.wrapError(exception)
             }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.disassociateCar$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.selectCar$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val addressArg = args[0] as String
+            val nameArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.selectCar(addressArg, nameArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              GateKeeperApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.clearCar$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
-              api.disassociateCar()
+              api.clearCar()
+              listOf(null)
+            } catch (exception: Throwable) {
+              GateKeeperApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.gatekeeper.GateKeeperHostApi.openBluetoothSettings$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.openBluetoothSettings()
               listOf(null)
             } catch (exception: Throwable) {
               GateKeeperApiPigeonUtils.wrapError(exception)

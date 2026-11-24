@@ -46,9 +46,14 @@ abstract final class Problems {
       'Connecting to your car cannot wake GateKeeper.',
       blocking: false,
     ),
-    'CAR_NOT_ASSOCIATED': ProblemInfo(
-      'Car Bluetooth not paired with GateKeeper',
+    'CAR_NOT_SELECTED': ProblemInfo(
+      'Car Bluetooth not chosen',
       'Android Auto is only checked when in-vehicle is detected or the app is open.',
+      blocking: false,
+    ),
+    'CAR_WAKE_BLOCKED': ProblemInfo(
+      'Car can’t wake GateKeeper yet',
+      'Turn off battery optimisation for GateKeeper so connecting to your car can start the car check.',
       blocking: false,
     ),
     'BATTERY_OPTIMIZED': ProblemInfo(

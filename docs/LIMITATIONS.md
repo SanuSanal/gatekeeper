@@ -29,7 +29,7 @@ Everything below comes from reading the platform documentation and the library i
 
 ## Background execution
 
-- Starting the decision window from the background relies on documented exemptions: geofence and activity-transition events, and the companion-device association. If Android refuses anyway (`ForegroundServiceStartNotAllowedException`), the event is still processed, the refusal is logged, and the 5 s timer runs only while the process stays alive.
+- Starting the decision window from the background relies on documented exemptions: geofence and activity-transition events, and, for the car Bluetooth wake-up, the app being exempt from battery optimisation. If Android refuses anyway (`ForegroundServiceStartNotAllowedException`), the event is still processed, the refusal is logged, and the 5 s timer runs only while the process stays alive.
 - On Android 14+ users can swipe away foreground-service notifications. The service keeps running for its short window.
 - Doze can delay geofence and activity broadcasts. A battery-optimisation exemption reduces this but cannot remove it.
 

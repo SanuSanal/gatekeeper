@@ -11,7 +11,7 @@ Record for each: device model, Android version, OEM skin, pass/fail, and the rel
 - [ ] Skipping a permission shows its consequence in Settings → Permissions and on the Status tab.
 - [ ] Both SIMs are listed with slot and carrier. Choosing SIM 2 persists across an app restart.
 - [ ] Map picker: tap places the marker and the radius circle; "Use my current location" works; typed coordinates apply.
-- [ ] Car pairing: the companion dialog lists the car and its name shows in Settings.
+- [ ] Car choice: Settings → Car Bluetooth lists paired devices by name with the car first; after choosing, its name shows in Settings and on the Status tab. "Let your car wake GateKeeper → Allow" turns off battery optimisation and the warning disappears.
 - [ ] `.\gradlew :app:connectedDebugAndroidTest` passes on the device.
 
 ## 1. Scenario B: arrive while driving (immediate)

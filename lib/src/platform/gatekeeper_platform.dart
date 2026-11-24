@@ -5,6 +5,7 @@ import 'gatekeeper_api.g.dart';
 export 'gatekeeper_api.g.dart'
     show
         AppInfoMessage,
+        BluetoothDeviceMessage,
         LogEntryMessage,
         LocationMessage,
         PlaceMessage,
@@ -26,8 +27,10 @@ abstract class GateKeeperPlatform {
   Future<void> clearLogs();
   Future<LocationMessage?> getCurrentLocation();
   Future<List<PlaceMessage>> searchPlaces(String query);
-  Future<String?> associateCar();
-  Future<void> disassociateCar();
+  Future<List<BluetoothDeviceMessage>> listPairedDevices();
+  Future<void> selectCar(String address, String name);
+  Future<void> clearCar();
+  Future<void> openBluetoothSettings();
   Future<void> simulateEvent(String event);
   Future<String?> validatePhoneNumber(String number);
   Future<void> setUiVisible(bool visible);
@@ -110,10 +113,16 @@ class PigeonGateKeeperPlatform implements GateKeeperPlatform, GateKeeperFlutterA
   Future<List<PlaceMessage>> searchPlaces(String query) => _api.searchPlaces(query);
 
   @override
-  Future<String?> associateCar() => _api.associateCar();
+  Future<List<BluetoothDeviceMessage>> listPairedDevices() => _api.listPairedDevices();
 
   @override
-  Future<void> disassociateCar() => _api.disassociateCar();
+  Future<void> selectCar(String address, String name) => _api.selectCar(address, name);
+
+  @override
+  Future<void> openBluetoothSettings() => _api.openBluetoothSettings();
+
+  @override
+  Future<void> clearCar() => _api.clearCar();
 
   @override
   Future<void> simulateEvent(String event) => _api.simulateEvent(event);

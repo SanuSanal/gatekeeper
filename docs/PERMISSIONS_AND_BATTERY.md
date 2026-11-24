@@ -15,16 +15,15 @@ GateKeeper asks for each permission in context during onboarding, and again from
 
 ## Install-time permissions (no prompt)
 
-`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_CONNECTED_DEVICE`, `CHANGE_NETWORK_STATE` (connectedDevice prerequisite on Android 14+), `REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND`, `WAKE_LOCK` (only while a delayed trigger is pending), `RECEIVE_BOOT_COMPLETED`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, and `INTERNET` (map tiles and address search in the location picker, and update checks).
+`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_CONNECTED_DEVICE`, `CHANGE_NETWORK_STATE` (connectedDevice prerequisite on Android 14+), `REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND` (only for car associations made by 1.0.0/1.0.1), `WAKE_LOCK` (only while a delayed trigger is pending), `RECEIVE_BOOT_COMPLETED`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, and `INTERNET` (map tiles and address search in the location picker, and update checks).
 
-## Car pairing (companion device)
+## Choosing your car
 
-**Settings → Car Bluetooth → Pair** opens Android's companion-device dialog. Pick your car's head unit; it must already be paired in Bluetooth settings. The association:
+**Settings → Car Bluetooth → Choose** lists the Bluetooth devices already paired with your phone, by name, with car head units (car-audio / hands-free class) first. Pick your car; if it isn't listed, pair it in Android's Bluetooth settings first. Listing names needs the **Nearby devices** permission.
 
-- tells GateKeeper which Bluetooth device is your car, so other devices are ignored, and
-- lets GateKeeper start its short decision window from the background when the car connects.
+GateKeeper then reacts only to that device connecting. When it connects while you're inside the geofence, GateKeeper starts a short foreground "car check". Android allows that from the background only for apps that are **exempt from battery optimisation**, so the app shows *Let your car wake GateKeeper → Allow* until the exemption is granted. (Versions 1.0.0/1.0.1 used Android's companion-device dialog instead; an association created by them still works and is removed when you change or remove the car.)
 
-Remove it from the same screen at any time.
+Change or remove the car from the same screen at any time.
 
 ## Battery optimisation (strongly recommended)
 

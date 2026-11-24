@@ -70,7 +70,7 @@ Under the hood it's a deterministic, persisted state machine (`STOPPED → MONIT
 GateKeeper doesn't keep a service running or show a permanent notification while you're parked at home, and it never polls GPS:
 
 - **Geofence** and **in-vehicle** events are delivered by Google Play services, even when the app is closed.
-- **Getting into the car** is detected through your car's **Bluetooth connection**. You pair the car with GateKeeper once through Android's companion-device dialog.
+- **Getting into the car** is detected through your car's **Bluetooth connection**. You choose your car once from the phone's paired Bluetooth devices.
 - Only when something relevant happens does a short check run (up to 2.5 min, with a small notification) to look at Android Auto and place the call.
 
 ## Features
@@ -115,7 +115,7 @@ Requirements: Android 11 or newer, Google Play services, a SIM that can make cal
 2. **Settings → Gate phone number.** Emergency numbers are refused.
 3. **Settings → SIM for gate calls.**
 4. **Settings → Parking location:** tap *my location* (or search an address), then drag the map until the pin sits on your spot. You can also paste coordinates or a Google Maps link. Adjust the radius if needed.
-5. **Settings → Car Bluetooth → Pair:** choose your car's head unit. It must already be paired in Android's Bluetooth settings.
+5. **Settings → Car Bluetooth → Choose:** pick your car from the list of paired devices (shown by name, cars first). Pair it in Android's Bluetooth settings first if it isn't listed. If GateKeeper asks, tap **Allow** under *Let your car wake GateKeeper*: this turns off battery optimisation for the app, which Android requires before the car connection can start GateKeeper's short car check.
 6. Turn on **Test mode**, press **Start monitoring**, and try a drive or the simulator buttons. Watch the **Activity** tab.
 7. When it behaves as expected, turn Test mode **off**.
 
@@ -216,7 +216,7 @@ lib/                      Flutter UI, settings, validation, update checker
 android/app/src/main/kotlin/com/gatekeeper/app/
   core/                   Pure-Kotlin trigger state machine (no Android imports)
   geofence/ activity/     Play services geofencing & activity transitions
-  car/                    Android Auto (CarConnection), car Bluetooth wake, companion pairing
+  car/                    Android Auto (CarConnection), car Bluetooth wake
   telephony/              SIM discovery, call placement, call-state confirmation
   service/                Short "decision window" foreground service
   update/                 Verified APK download + installer hand-off
@@ -239,7 +239,7 @@ docs/                     Architecture, permissions, limitations, test checklist
 
 **Will it call when I walk home?** No. A vehicle signal is required, and walking into the geofence never calls.
 
-**Why didn't it call when I left?** Activity detection needs the car moving and can take 30–90 s. Pair your car's Bluetooth so Android Auto can trigger it sooner. The Activity log shows why each trigger was or wasn't used.
+**Why didn't it call when I left?** Activity detection needs the car moving and can take 30–90 s. Choose your car's Bluetooth in Settings so Android Auto can trigger it sooner. The Activity log shows why each trigger was or wasn't used.
 
 **Can it call emergency numbers?** No. They are refused when saving and again before dialling.
 

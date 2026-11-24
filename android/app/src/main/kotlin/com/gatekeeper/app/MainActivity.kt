@@ -1,6 +1,5 @@
 package com.gatekeeper.app
 
-import android.content.Intent
 import com.gatekeeper.app.bridge.GateKeeperFlutterApi
 import com.gatekeeper.app.bridge.GateKeeperHostApi
 import com.gatekeeper.app.bridge.HostApiImpl
@@ -24,12 +23,5 @@ class MainActivity : FlutterActivity() {
         GateKeeperHostApi.setUp(flutterEngine.dartExecutor.binaryMessenger, null)
         hostApi = null
         super.cleanUpFlutterEngine(flutterEngine)
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (hostApi?.onActivityResult(requestCode, resultCode, data) == true) return
-        @Suppress("DEPRECATION")
-        super.onActivityResult(requestCode, resultCode, data)
     }
 }

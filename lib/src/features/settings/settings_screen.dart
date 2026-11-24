@@ -12,6 +12,7 @@ import '../../update/update_controller.dart';
 import '../../update/update_widgets.dart';
 import '../location_picker/location_picker_screen.dart';
 import '../permissions/permission_service.dart';
+import 'car_picker_sheet.dart';
 import 'simulator_panel.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -168,13 +169,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // ---- car -------------------------------------------------------------------------------
 
-  Future<void> _pairCar() async {
+  PermissionItem _item(String id) => PermissionService.items.firstWhere((i) => i.id == id);
+
+  Future<void> _chooseCar() async {
+    final device = await showCarPicker(
+      context,
+      platform: c.platform,
+      requestBluetoothPermission: () async {
+        final item = _item('bluetooth');
+        if (await widget.permissions.isPermanentlyDenied(item)) {
+          await widget.permissions.openSettings();
+          return false;
+        }
+        final ok = await widget.permissions.request(item);
+        await _loadPermissions();
+        return ok;
+      },
+    );
+    if (device == null) return;
     try {
-      final name = await c.associateCar();
-      _snack(name == null ? 'Pairing cancelled' : 'Paired with $name');
+      await c.selectCar(device);
+      _snack('Car set to ${device.name}');
     } on PlatformException catch (e) {
-      _snack(e.message ?? 'Pairing failed');
+      _snack(e.message ?? 'Could not select the car');
     }
+  }
+
+  Future<void> _allowCarWake() async {
+    await widget.permissions.request(_item('battery'));
+    await _loadPermissions();
+    await c.refresh();
   }
 
   // ---- permissions -------------------------------------------------------------------------
@@ -301,17 +325,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (v) => _save(s.copyWith(androidAutoEnabled: v)),
             ),
             ListTile(
-              leading: const Icon(Icons.bluetooth_rounded),
-              title: const Text('Car Bluetooth'),
+              leading: Icon(s.carDeviceAssociated ? Icons.directions_car_rounded : Icons.bluetooth_rounded),
+              title: Text(s.carDeviceAssociated ? (s.carDeviceName ?? 'Car') : 'Car Bluetooth'),
               subtitle: Text(
                 s.carDeviceAssociated
-                    ? '${s.carDeviceName ?? 'Car'}: connecting wakes GateKeeper to check Android Auto'
-                    : 'Pair your car so connecting to it wakes GateKeeper (no always-on service)',
+                    ? 'Connecting to this car wakes GateKeeper to check Android Auto'
+                    : 'Choose your car from your paired Bluetooth devices (no always-on service)',
               ),
+              onTap: _chooseCar,
               trailing: s.carDeviceAssociated
-                  ? TextButton(onPressed: c.disassociateCar, child: const Text('Remove'))
-                  : FilledButton.tonal(onPressed: _pairCar, child: const Text('Pair')),
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextButton(onPressed: _chooseCar, child: const Text('Change')),
+                        IconButton(
+                          tooltip: 'Remove car',
+                          onPressed: c.clearCar,
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    )
+                  : FilledButton.tonal(onPressed: _chooseCar, child: const Text('Choose')),
             ),
+            if (c.status?.problems.contains('CAR_WAKE_BLOCKED') ?? false)
+              ListTile(
+                leading: Icon(Icons.battery_alert_rounded, color: scheme.tertiary),
+                title: const Text('Let your car wake GateKeeper'),
+                subtitle: const Text(
+                  'Android only lets an app start its car check from the background if battery optimisation is off for it.',
+                ),
+                trailing: FilledButton.tonal(onPressed: _allowCarWake, child: const Text('Allow')),
+              ),
             const SectionHeader('Test mode'),
             SwitchListTile(
               secondary: const Icon(Icons.science_outlined),

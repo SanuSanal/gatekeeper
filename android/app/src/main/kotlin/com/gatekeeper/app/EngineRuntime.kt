@@ -112,11 +112,11 @@ class EngineRuntime private constructor(context: Context) {
     fun addListener(l: () -> Unit) = listeners.add(l)
     fun removeListener(l: () -> Unit) = listeners.remove(l)
 
-    fun carAssociated(config: AppConfig = configStore.load()) =
+    fun carCompanionAssociated(config: AppConfig = configStore.load()) =
         carAssociation.isAssociated(config.carDeviceAddress, config.carAssociationId)
 
     fun problems(config: AppConfig = configStore.load()): List<String> =
-        PermissionMonitor.problems(app, config, sims, carAssociated(config))
+        PermissionMonitor.problems(app, config, sims, carCompanionAssociated(config))
 
     // ---- engine loop ---------------------------------------------------------------------------
 

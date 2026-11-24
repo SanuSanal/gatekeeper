@@ -113,11 +113,31 @@ class FakePlatform implements GateKeeperPlatform {
   @override
   Future<List<PlaceMessage>> searchPlaces(String query) async => places;
 
-  @override
-  Future<String?> associateCar() async => 'My Car';
+  List<BluetoothDeviceMessage> paired = [
+    BluetoothDeviceMessage(name: 'Galaxy Buds', address: '11:22:33:44:55:66', carLike: false, selected: false),
+    BluetoothDeviceMessage(name: 'My Car', address: 'AA:BB:CC:DD:EE:FF', carLike: true, selected: false),
+  ];
+  String? selectedCar;
 
   @override
-  Future<void> disassociateCar() async {}
+  Future<List<BluetoothDeviceMessage>> listPairedDevices() async => paired;
+
+  @override
+  Future<void> selectCar(String address, String name) async {
+    selectedCar = address;
+    settings.carDeviceName = name;
+    settings.carDeviceAssociated = true;
+  }
+
+  @override
+  Future<void> clearCar() async {
+    selectedCar = null;
+    settings.carDeviceName = null;
+    settings.carDeviceAssociated = false;
+  }
+
+  @override
+  Future<void> openBluetoothSettings() async {}
 
   @override
   Future<void> simulateEvent(String event) async {

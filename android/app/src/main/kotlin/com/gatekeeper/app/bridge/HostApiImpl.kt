@@ -3,7 +3,6 @@ package com.gatekeeper.app.bridge
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.IntentSender
 import com.gatekeeper.app.EngineRuntime
 import com.gatekeeper.app.car.CarConnectionObserver
 import com.gatekeeper.app.core.Event
@@ -19,7 +18,6 @@ import android.os.Build
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,7 +30,6 @@ class HostApiImpl(
     private val flutterApi: GateKeeperFlutterApi,
 ) : GateKeeperHostApi {
     private val scope = CoroutineScope(Dispatchers.Main)
-    private var pendingAssociation: CompletableDeferred<String?>? = null
     private val statusListener: () -> Unit = { pushStatus() }
     private val updates = UpdateInstaller(activity)
 
@@ -67,7 +64,7 @@ class HostApiImpl(
             activityRecognitionEnabled = c.activityRecognitionEnabled,
             testMode = c.testMode,
             carDeviceName = c.carDeviceName,
-            carDeviceAssociated = runtime.carAssociated(c),
+            carDeviceAssociated = c.carDeviceAddress != null,
             onboardingComplete = c.onboardingComplete,
         )
     }
@@ -223,53 +220,68 @@ class HostApiImpl(
 
     // ---- car association ----------------------------------------------------------------------
 
-    override suspend fun associateCar(): String? {
-        pendingAssociation?.cancel()
-        val deferred = CompletableDeferred<String?>()
-        pendingAssociation = deferred
-        runtime.carAssociation.start(
-            activity,
-            launch = { sender: IntentSender ->
-                try {
-                    activity.startIntentSenderForResult(sender, REQUEST_ASSOCIATE, null, 0, 0, 0)
-                } catch (e: Exception) {
-                    deferred.completeExceptionally(FlutterError("association", e.message, null))
-                }
-            },
-            onError = { msg -> deferred.completeExceptionally(FlutterError("association", msg, null)) },
-        )
-        return deferred.await()
+    @SuppressLint("MissingPermission") // checked via PermissionMonitor.bluetoothOk before any device access
+    override fun listPairedDevices(): List<BluetoothDeviceMessage> {
+        if (!PermissionMonitor.bluetoothOk(activity)) {
+            throw FlutterError("permission", "Allow \"Nearby devices\" so GateKeeper can list your paired Bluetooth devices", null)
+        }
+        val adapter = activity.getSystemService(android.bluetooth.BluetoothManager::class.java)?.adapter
+            ?: throw FlutterError("bluetooth_off", "This phone has no Bluetooth", null)
+        if (!adapter.isEnabled) throw FlutterError("bluetooth_off", "Turn on Bluetooth to see your paired devices", null)
+        val selected = runtime.configStore.load().carDeviceAddress
+        return try {
+            adapter.bondedDevices.orEmpty().map { d ->
+                val name = d.alias?.takeIf { it.isNotBlank() } ?: d.name?.takeIf { it.isNotBlank() } ?: d.address
+                BluetoothDeviceMessage(
+                    name = name,
+                    address = d.address,
+                    carLike = isCarLike(d),
+                    selected = d.address.equals(selected, ignoreCase = true),
+                )
+            }.sortedWith(compareByDescending<BluetoothDeviceMessage> { it.carLike }.thenBy { it.name.lowercase() })
+        } catch (e: SecurityException) {
+            throw FlutterError("permission", "Allow \"Nearby devices\" so GateKeeper can list your paired Bluetooth devices", null)
+        }
     }
 
-    /** Forwarded from MainActivity.onActivityResult. */
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode != REQUEST_ASSOCIATE) return false
-        val deferred = pendingAssociation ?: return true
-        pendingAssociation = null
-        val car = runtime.carAssociation.parseResult(resultCode, data)
-        if (car == null) {
-            deferred.complete(null)
-            return true
+    @SuppressLint("MissingPermission") // only called from listPairedDevices() after the BLUETOOTH_CONNECT check
+    private fun isCarLike(d: android.bluetooth.BluetoothDevice): Boolean {
+        val cls = d.bluetoothClass ?: return false
+        return cls.deviceClass == android.bluetooth.BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO ||
+            cls.deviceClass == android.bluetooth.BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE
+    }
+
+    override fun selectCar(address: String, name: String) {
+        if (!android.bluetooth.BluetoothAdapter.checkBluetoothAddress(address.uppercase())) {
+            throw FlutterError("invalid", "Invalid Bluetooth address", null)
         }
         val old = runtime.configStore.load()
-        if (old.carDeviceAddress != null && !old.carDeviceAddress.equals(car.address, ignoreCase = true)) {
+        if (old.carDeviceAddress != null && !old.carDeviceAddress.equals(address, ignoreCase = true)) {
+            // Clean up a companion association created by older versions for the previous car.
             runtime.carAssociation.disassociate(old.carDeviceAddress, old.carAssociationId)
         }
+        val keepAssociation = old.carDeviceAddress.equals(address, ignoreCase = true)
         runtime.configStore.update {
-            it.copy(carDeviceAddress = car.address, carDeviceName = car.name ?: "Car", carAssociationId = car.associationId)
+            it.copy(
+                carDeviceAddress = address.uppercase(),
+                carDeviceName = name.ifBlank { "Car" },
+                carAssociationId = if (keepAssociation) it.carAssociationId else null,
+            )
         }
-        runtime.log(LogCategory.BLUETOOTH, "Car associated: ${car.name ?: "unnamed device"}")
-        deferred.complete(car.name ?: "Car")
+        runtime.log(LogCategory.BLUETOOTH, "Car selected: ${name.ifBlank { "unnamed device" }}")
         pushStatus()
-        return true
     }
 
-    override fun disassociateCar() {
+    override fun clearCar() {
         val c = runtime.configStore.load()
         runtime.carAssociation.disassociate(c.carDeviceAddress, c.carAssociationId)
         runtime.configStore.update { it.copy(carDeviceAddress = null, carDeviceName = null, carAssociationId = null) }
-        runtime.log(LogCategory.BLUETOOTH, "Car association removed")
+        runtime.log(LogCategory.BLUETOOTH, "Car removed")
         pushStatus()
+    }
+
+    override fun openBluetoothSettings() {
+        activity.startActivity(Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS))
     }
 
     // ---- test mode -------------------------------------------------------------------------------
@@ -332,7 +344,6 @@ class HostApiImpl(
     override fun openInstallPermissionSettings() = updates.openInstallPermissionSettings(activity)
 
     companion object {
-        const val REQUEST_ASSOCIATE = 4711
         private const val UI_OWNER = "ui"
     }
 }

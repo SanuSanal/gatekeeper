@@ -87,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     title: 'Almost done',
                     body: 'Next, set up the gate in Settings:\n\n'
                         '• gate phone number\n• the SIM to call from\n• your parking location and radius\n'
-                        '• optionally, pair your car’s Bluetooth\n\n'
+                        '• optionally, choose your car’s Bluetooth\n\n'
                         'Try test mode first: it runs the same logic but never places a call.',
                     primary: FilledButton(onPressed: _finish, child: const Text('Open GateKeeper')),
                   ),

@@ -31,7 +31,7 @@
 | `android/.../core/` | `Model.kt`, `TriggerEngine.kt`: the pure state machine |
 | `android/.../store/` | `ConfigStore`, `EngineStateStore`, `EventLog` |
 | `android/.../geofence/`, `activity/` | Play services registration managers + receivers |
-| `android/.../car/` | `CarConnectionObserver` (Android Auto), `CarBluetoothReceiver`, `CarAssociation` (CompanionDeviceManager) |
+| `android/.../car/` | `CarConnectionObserver` (Android Auto), `CarBluetoothReceiver`, `CarAssociation` (cleans up companion associations from 1.0.0/1.0.1) |
 | `android/.../telephony/` | `SimRepository`, `GateCaller`, `CallStateWatcher`, `CallActivity`, `PhoneNumbers` |
 | `android/.../service/` | `DecisionWindowService` |
 | `android/.../system/` | `PermissionMonitor`, `Notifications`, `BootReceiver`, `StopMonitoringReceiver` |
@@ -48,7 +48,7 @@
 | Car Bluetooth ACL connect | `ACTION_ACL_CONNECTED` (implicit-broadcast exception) → `CarBluetoothReceiver` | Yes | **No**, wake only |
 | Boot / app update | `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED` | Yes | n/a (re-registers) |
 
-**Decision window.** No service runs while you are parked and idle. A wake event that matters (genuine geofence ENTER, car Bluetooth connect while inside, IN_VEHICLE while inside, a pending trigger) starts `DecisionWindowService`. This is a `connectedDevice` foreground service that lasts at most 150 s and shows a low-importance notification with a **Stop monitoring** action. It observes Android Auto, keeps the process alive for the delay timer and hosts the call. Starting it from the background relies on documented exemptions: geofence and activity-transition events, and the associated companion device (`REQUEST_COMPANION_START_FOREGROUND_SERVICES_FROM_BACKGROUND`).
+**Decision window.** No service runs while you are parked and idle. A wake event that matters (genuine geofence ENTER, car Bluetooth connect while inside, IN_VEHICLE while inside, a pending trigger) starts `DecisionWindowService`. This is a `connectedDevice` foreground service that lasts at most 150 s and shows a low-importance notification with a **Stop monitoring** action. It observes Android Auto, keeps the process alive for the delay timer and hosts the call. Starting it from the background relies on documented exemptions: geofence and activity-transition events and, for the car Bluetooth wake-up, the app's battery-optimisation exemption (the app prompts for it with `CAR_WAKE_BLOCKED`). The car itself is chosen from the phone's bonded-device list (`BluetoothAdapter.getBondedDevices()`, names via `BLUETOOTH_CONNECT`).
 
 > The plan proposed `shortService`. `connectedDevice` was used instead because `shortService` exists only on API 34+ while minSdk is 30. On Android 14+ its prerequisite is met by the normal `CHANGE_NETWORK_STATE` permission (or `BLUETOOTH_CONNECT`).
 
