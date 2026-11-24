@@ -52,3 +52,7 @@ app.*.map.json
 *.jks
 *.keystore
 key.properties
+
+# Logo design scratch output
+/design/logo/renders/
+/design/logo/*preview.html

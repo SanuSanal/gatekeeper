@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app_controller.dart';
+import '../../ui/logo.dart';
 import '../permissions/permission_service.dart';
 
 /// First-run walkthrough: explains what GateKeeper does and asks for each permission in context.
@@ -70,6 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   _page(
                     icon: Icons.fence_rounded,
+                    logo: true,
                     title: 'Welcome to GateKeeper',
                     body: 'GateKeeper phones your gate automatically when you drive into your parking area, '
                         'or when you get into your car while parked there.\n\n'
@@ -131,6 +133,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _page({
     required IconData icon,
+    bool logo = false,
     required String title,
     required String body,
     required Widget primary,
@@ -146,11 +149,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: theme.colorScheme.primaryContainer,
-                child: Icon(icon, size: 40, color: theme.colorScheme.onPrimaryContainer),
-              ),
+              if (logo)
+                const GateKeeperMark(size: 96)
+              else
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  child: Icon(icon, size: 40, color: theme.colorScheme.onPrimaryContainer),
+                ),
               const SizedBox(height: 24),
               Text(title, style: theme.textTheme.headlineSmall, textAlign: TextAlign.center),
               const SizedBox(height: 16),

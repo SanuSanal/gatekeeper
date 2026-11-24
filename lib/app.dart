@@ -6,6 +6,7 @@ import 'src/features/logs/logs_screen.dart';
 import 'src/features/onboarding/onboarding_screen.dart';
 import 'src/features/permissions/permission_service.dart';
 import 'src/features/settings/settings_screen.dart';
+import 'src/ui/logo.dart';
 import 'src/update/update_controller.dart';
 import 'src/update/update_widgets.dart';
 
@@ -26,7 +27,7 @@ class GateKeeperApp extends StatefulWidget {
 }
 
 class _GateKeeperAppState extends State<GateKeeperApp> with WidgetsBindingObserver {
-  static const _seed = Color(0xFF1F6B5C);
+  static const _seed = GateKeeperMark.brandGreen;
 
   @override
   void initState() {
@@ -135,8 +136,8 @@ class _MainShellState extends State<MainShell> {
         title: Row(
           children: [
             if (_tab == 0) ...[
-              Icon(Icons.fence_rounded, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 8),
+              const GateKeeperMark(size: 26),
+              const SizedBox(width: 10),
             ],
             Text(titles[_tab], style: const TextStyle(fontWeight: FontWeight.w700)),
           ],

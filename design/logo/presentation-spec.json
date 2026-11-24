@@ -1,0 +1,35 @@
+{
+  "brand": "GateKeeper",
+  "tagline": "The gate opens before you reach it",
+  "brief": "An Android app that rings your call-to-open gate automatically when you drive up to, or leave, your parking spot. It should feel effortless, calm and reliable: a quiet helper, not a security product.",
+  "adjectives": ["effortless", "calm", "reliable", "warm"],
+  "criteria": "Success: avoids the category clichés (house, key, shield, pin, handset), reads at 16 px as a launcher icon and favicon, works in one colour, and ties calling and opening together.",
+  "mockups": ["app-icon", "favicon-tab", "readme", "website", "social", "sticker"],
+  "nav": ["How it works", "Install", "Docs"],
+  "brand_color": "#1F6B5C",
+  "greyscale": false,
+  "designer": "GateKeeper",
+  "round": 4,
+  "concepts": [
+    {
+      "name": "Lift",
+      "symbol": "kit/symbol-color.svg",
+      "lockup": "kit/lockup-horizontal-color.svg",
+      "symbol_on_tile": "kit/symbol-reversed.svg",
+      "lockup_on_dark": "kit/lockup-horizontal-reversed.svg",
+      "tile_color": "#1F6B5C",
+      "idea": "The gate's lifting arm drawn as rising signal bars around one pivot: calling and opening in a single shape.",
+      "rationale": [
+        "Amber dot = you and the call; green bars = the arm rising, one step at a time",
+        "Clean 0/30/60 degree geometry with one bar width and round caps, echoed in the custom wordmark",
+        "Dedicated small-size cut keeps the gaps open for favicons and notifications"
+      ]
+    }
+  ],
+  "recommendation": "Lift: ownable in a category of keys and shields, friendly, and it works from a 16 px status-bar icon up to the website hero.",
+  "next_steps": [
+    "Ship the adaptive launcher icon and notification icon in the next release",
+    "Use the horizontal lockup on the website and README",
+    "Trademark search before any wider distribution"
+  ]
+}
