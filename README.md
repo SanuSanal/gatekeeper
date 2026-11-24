@@ -14,6 +14,7 @@
   <a href="https://github.com/SanuSanal/gatekeeper/actions/workflows/release.yml"><img alt="Release build" src="https://github.com/SanuSanal/gatekeeper/actions/workflows/release.yml/badge.svg"></a>
   <img alt="Android 11+" src="https://img.shields.io/badge/Android-11%2B-3ddc84">
   <img alt="No tracking" src="https://img.shields.io/badge/tracking-none-555">
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
 
 <p align="center">
@@ -44,6 +45,7 @@ Many gated communities and parking lots use a **call-to-open** gate: you ring a 
 - [Project structure](#project-structure)
 - [Documentation](#documentation)
 - [FAQ](#faq)
+- [License](#license)
 
 ## How it works
 
@@ -244,3 +246,7 @@ docs/                     Architecture, permissions, limitations, test checklist
 **Is it on the Play Store?** No. Play Store policy restricts the permissions it needs (background calling and location), so it's distributed as signed APKs here.
 
 **iPhone?** No. GateKeeper is Android-only.
+
+## License
+
+GateKeeper is released under the [MIT License](LICENSE). The name and logo identify this project; please don't use them for forks or derivative apps in a way that suggests they are the official GateKeeper.
