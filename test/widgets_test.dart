@@ -114,6 +114,23 @@ void main() {
     expect(platform.simulated, ['enter']);
   });
 
+  testWidgets('activity log lives under Test & diagnostics, not in the bottom bar', (tester) async {
+    await pumpApp(tester);
+    expect(find.byType(NavigationDestination), findsNWidgets(2));
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Activity log'), 300, scrollable: find.byType(Scrollable).last);
+    expect(find.text('TEST & DIAGNOSTICS'), findsOneWidget);
+    await tester.tap(find.text('Activity log'));
+    await tester.pumpAndSettle();
+    expect(find.text('ENTER geofence'), findsOneWidget);
+    expect(find.text('Placing gate call'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('ENTER geofence'), findsNothing);
+    expect(find.text('Activity log'), findsOneWidget);
+  });
+
   testWidgets('onboarding is shown until completed', (tester) async {
     await pumpApp(tester, setup: (p) => p.settings.onboardingComplete = false);
     expect(find.text('Welcome to GateKeeper'), findsOneWidget);

@@ -29,7 +29,7 @@
 Many gated communities and parking lots use a **call-to-open** gate: you ring a number and the gate opens (the call is usually rejected, so it's free). GateKeeper places that call for you at the right moment, from the right SIM, exactly once.
 
 > [!IMPORTANT]
-> GateKeeper is new. The trigger logic is covered by unit tests, but background behaviour (geofencing, activity detection, car Bluetooth wake-up, background calling) differs between Android versions and phone makers. **Start in Test mode**, check the Activity log, and work through the [device test checklist](docs/DEVICE_TEST_CHECKLIST.md) before you depend on it.
+> GateKeeper is new. The trigger logic is covered by unit tests, but background behaviour (geofencing, activity detection, car Bluetooth wake-up, background calling) differs between Android versions and phone makers. **Start in Test mode**, check the activity log (Settings → Test & diagnostics), and work through the [device test checklist](docs/DEVICE_TEST_CHECKLIST.md) before you depend on it.
 
 ## Contents
 
@@ -81,7 +81,7 @@ GateKeeper doesn't keep a service running or show a permanent notification while
 - Adjustable radius (100–1000 m), delay (1–30 s) and cooldown (1–30 min)
 - Toggles for Android Auto detection, Activity Recognition and the immediate arrival trigger
 - **Test mode** with an event simulator: same logic, never dials
-- **Activity log** of every geofence, vehicle, Android Auto and Bluetooth event, every trigger decision and every call attempt
+- **Activity log** (Settings → Test & diagnostics) of every geofence, vehicle, Android Auto and Bluetooth event, every trigger decision and every call attempt
 - **Tap-to-call fallback** if Android blocks the background call
 - **In-app updates** from GitHub Releases, verified by checksum and signing certificate
 - Material 3, light and dark theme, Android 11+
@@ -116,7 +116,7 @@ Requirements: Android 11 or newer, Google Play services, a SIM that can make cal
 3. **Settings → SIM for gate calls.**
 4. **Settings → Parking location:** tap *my location* (or search an address), then drag the map until the pin sits on your spot. You can also paste coordinates or a Google Maps link. Adjust the radius if needed.
 5. **Settings → Car Bluetooth → Choose:** pick your car from the list of paired devices (shown by name, cars first). Pair it in Android's Bluetooth settings first if it isn't listed. If GateKeeper asks, tap **Allow** under *Let your car wake GateKeeper*: this turns off battery optimisation for the app, which Android requires before the car connection can start GateKeeper's short car check.
-6. Turn on **Test mode**, press **Start monitoring**, and try a drive or the simulator buttons. Watch the **Activity** tab.
+6. Turn on **Test mode**, press **Start monitoring**, and try a drive or the simulator buttons. Watch the activity log under **Settings → Test & diagnostics**.
 7. When it behaves as expected, turn Test mode **off**.
 
 ## Updating

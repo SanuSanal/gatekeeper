@@ -11,6 +11,7 @@ import '../../ui/widgets.dart';
 import '../../update/update_controller.dart';
 import '../../update/update_widgets.dart';
 import '../location_picker/location_picker_screen.dart';
+import '../logs/logs_screen.dart';
 import '../permissions/permission_service.dart';
 import 'car_picker_sheet.dart';
 import 'simulator_panel.dart';
@@ -356,7 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 trailing: FilledButton.tonal(onPressed: _allowCarWake, child: const Text('Allow')),
               ),
-            const SectionHeader('Test mode'),
+            const SectionHeader('Test & diagnostics'),
             SwitchListTile(
               secondary: const Icon(Icons.science_outlined),
               title: const Text('Test mode'),
@@ -365,6 +366,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (v) => _save(s.copyWith(testMode: v)),
             ),
             if (s.testMode) SimulatorPanel(platform: c.platform, onError: _snack),
+            ListTile(
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: const Text('Activity log'),
+              subtitle: const Text('Every geofence, vehicle and car event, trigger decision and call attempt'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => LogsScreen(controller: c)),
+              ),
+            ),
             const SectionHeader('Permissions'),
             for (final item in PermissionService.items)
               ListTile(

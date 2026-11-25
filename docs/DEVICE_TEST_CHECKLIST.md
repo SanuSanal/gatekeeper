@@ -2,7 +2,7 @@
 
 Use a **dual-SIM** Android 11+ phone with Google Play services. Do runs 1–6 in **test mode** first (no calls), then repeat the key ones with test mode off, using a number you control instead of the real gate.
 
-Record for each: device model, Android version, OEM skin, pass/fail, and the relevant lines from the **Activity** tab.
+Record for each: device model, Android version, OEM skin, pass/fail, and the relevant lines from the activity log (**Settings → Test & diagnostics → Activity log**).
 
 ## 0. Setup
 

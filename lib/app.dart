@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'src/app_controller.dart';
 import 'src/features/home/home_screen.dart';
-import 'src/features/logs/logs_screen.dart';
 import 'src/features/onboarding/onboarding_screen.dart';
 import 'src/features/permissions/permission_service.dart';
 import 'src/features/settings/settings_screen.dart';
@@ -126,11 +125,10 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomeScreen(controller: widget.controller, onOpenSettings: () => setState(() => _tab = 2)),
-      LogsScreen(controller: widget.controller),
+      HomeScreen(controller: widget.controller, onOpenSettings: () => setState(() => _tab = 1)),
       SettingsScreen(controller: widget.controller, updates: widget.updates, permissions: widget.permissions),
     ];
-    const titles = ['GateKeeper', 'Activity', 'Settings'];
+    const titles = ['GateKeeper', 'Settings'];
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -149,7 +147,6 @@ class _MainShellState extends State<MainShell> {
         onDestinationSelected: (i) => setState(() => _tab = i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.shield_outlined), selectedIcon: Icon(Icons.shield), label: 'Status'),
-          NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Activity'),
           NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),

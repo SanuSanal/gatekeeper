@@ -64,68 +64,75 @@ class _LogsScreenState extends State<LogsScreen> {
   }
 
   IconData _icon(String category) => switch (category) {
-        'GEOFENCE' => Icons.place_outlined,
-        'VEHICLE' => Icons.directions_car_outlined,
-        'ANDROID_AUTO' => Icons.phone_android_outlined,
-        'BLUETOOTH' => Icons.bluetooth,
-        'TRIGGER' => Icons.bolt_outlined,
-        'CALL' => Icons.call_outlined,
-        'ERROR' => Icons.error_outline,
-        'TEST' => Icons.science_outlined,
-        _ => Icons.info_outline,
-      };
+    'GEOFENCE' => Icons.place_outlined,
+    'VEHICLE' => Icons.directions_car_outlined,
+    'ANDROID_AUTO' => Icons.phone_android_outlined,
+    'BLUETOOTH' => Icons.bluetooth,
+    'TRIGGER' => Icons.bolt_outlined,
+    'CALL' => Icons.call_outlined,
+    'ERROR' => Icons.error_outline,
+    'TEST' => Icons.science_outlined,
+    _ => Icons.info_outline,
+  };
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final allowed = _filters[_filter];
     final visible = allowed == null ? _entries : _entries.where((e) => allowed.contains(e.category)).toList();
-    return Column(
-      children: [
-        SizedBox(
-          height: 52,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            children: [
-              for (final f in _filters.keys)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(f),
-                    selected: _filter == f,
-                    onSelected: (_) => setState(() => _filter = f),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Activity log')),
+      body: Column(
+        children: [
+          SizedBox(
+            height: 52,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              children: [
+                for (final f in _filters.keys)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(f),
+                      selected: _filter == f,
+                      onSelected: (_) => setState(() => _filter = f),
+                    ),
                   ),
-                ),
-              IconButton(tooltip: 'Clear log', onPressed: _clear, icon: const Icon(Icons.delete_sweep_outlined)),
-            ],
+                IconButton(tooltip: 'Clear log', onPressed: _clear, icon: const Icon(Icons.delete_sweep_outlined)),
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _load,
-            child: visible.isEmpty
-                ? ListView(children: const [
-                    SizedBox(height: 120),
-                    Center(child: Text('No events yet')),
-                  ])
-                : ListView.separated(
-                    itemCount: visible.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1, indent: 56),
-                    itemBuilder: (context, i) {
-                      final e = visible[i];
-                      final isError = e.category == 'ERROR';
-                      return ListTile(
-                        dense: true,
-                        leading: Icon(_icon(e.category), color: isError ? scheme.error : scheme.onSurfaceVariant),
-                        title: Text(e.message),
-                        subtitle: Text('${Labels.time(e.timestamp)} · ${e.category.toLowerCase().replaceAll('_', ' ')}'),
-                      );
-                    },
-                  ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _load,
+              child: visible.isEmpty
+                  ? ListView(
+                      children: const [
+                        SizedBox(height: 120),
+                        Center(child: Text('No events yet')),
+                      ],
+                    )
+                  : ListView.separated(
+                      itemCount: visible.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1, indent: 56),
+                      itemBuilder: (context, i) {
+                        final e = visible[i];
+                        final isError = e.category == 'ERROR';
+                        return ListTile(
+                          dense: true,
+                          leading: Icon(_icon(e.category), color: isError ? scheme.error : scheme.onSurfaceVariant),
+                          title: Text(e.message),
+                          subtitle: Text(
+                            '${Labels.time(e.timestamp)} · ${e.category.toLowerCase().replaceAll('_', ' ')}',
+                          ),
+                        );
+                      },
+                    ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
