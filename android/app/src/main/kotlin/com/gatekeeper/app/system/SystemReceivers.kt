@@ -17,7 +17,10 @@ class BootReceiver : BroadcastReceiver() {
             else -> return
         }
         val pending = goAsync()
-        EngineRuntime.get(context).restoreRegistrations(reason) { pending.finish() }
+        val runtime = EngineRuntime.get(context)
+        // No disconnect broadcast arrives for a connection that a reboot ended.
+        if (reason == "boot") runtime.forgetCarConnection("phone restarted")
+        runtime.restoreRegistrations(reason) { pending.finish() }
     }
 }
 

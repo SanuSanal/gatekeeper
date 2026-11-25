@@ -27,6 +27,7 @@ class GateSettings {
     this.immediateTrigger = true,
     this.androidAutoEnabled = true,
     this.activityRecognitionEnabled = true,
+    this.carBluetoothEnabled = true,
     this.testMode = false,
     this.carDeviceName,
     this.carDeviceAssociated = false,
@@ -44,6 +45,9 @@ class GateSettings {
   final bool immediateTrigger;
   final bool androidAutoEnabled;
   final bool activityRecognitionEnabled;
+
+  /// Being connected to the chosen car's Bluetooth counts as a vehicle signal. Has no effect until a car is chosen.
+  final bool carBluetoothEnabled;
   final bool testMode;
   final String? carDeviceName;
   final bool carDeviceAssociated;
@@ -65,6 +69,7 @@ class GateSettings {
     bool? immediateTrigger,
     bool? androidAutoEnabled,
     bool? activityRecognitionEnabled,
+    bool? carBluetoothEnabled,
     bool? testMode,
     bool? onboardingComplete,
   }) {
@@ -81,6 +86,7 @@ class GateSettings {
       immediateTrigger: immediateTrigger ?? this.immediateTrigger,
       androidAutoEnabled: androidAutoEnabled ?? this.androidAutoEnabled,
       activityRecognitionEnabled: activityRecognitionEnabled ?? this.activityRecognitionEnabled,
+      carBluetoothEnabled: carBluetoothEnabled ?? this.carBluetoothEnabled,
       testMode: testMode ?? this.testMode,
       carDeviceName: carDeviceName,
       carDeviceAssociated: carDeviceAssociated,
@@ -100,6 +106,7 @@ class GateSettings {
         immediateTrigger: m.immediateTrigger,
         androidAutoEnabled: m.androidAutoEnabled,
         activityRecognitionEnabled: m.activityRecognitionEnabled,
+        carBluetoothEnabled: m.carBluetoothEnabled,
         testMode: m.testMode,
         carDeviceName: m.carDeviceName,
         carDeviceAssociated: m.carDeviceAssociated,
@@ -118,6 +125,7 @@ class GateSettings {
         immediateTrigger: immediateTrigger,
         androidAutoEnabled: androidAutoEnabled,
         activityRecognitionEnabled: activityRecognitionEnabled,
+        carBluetoothEnabled: carBluetoothEnabled,
         testMode: testMode,
         carDeviceName: carDeviceName,
         carDeviceAssociated: carDeviceAssociated,

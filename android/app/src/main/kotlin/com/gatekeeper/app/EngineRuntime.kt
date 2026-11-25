@@ -98,6 +98,18 @@ class EngineRuntime private constructor(context: Context) {
         else -> false
     }
 
+    /**
+     * Marks the car as disconnected when no disconnect broadcast will come for it (reboot, car changed), so a
+     * stale "connected" can never count as a vehicle signal.
+     */
+    fun forgetCarConnection(reason: String) {
+        handler.post {
+            if (!state.carBluetoothConnected) return@post
+            log(LogCategory.BLUETOOTH, "Car Bluetooth state cleared ($reason)")
+            process(Event.CarBluetoothChanged(now(), connected = false))
+        }
+    }
+
     fun refreshPrerequisites(onDone: (() -> Unit)? = null) =
         dispatch(Event.PrerequisitesChanged(now(), currentPrerequisites()), onDone)
 

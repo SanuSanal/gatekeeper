@@ -67,7 +67,10 @@ object PermissionMonitor {
         if (!config.hasLocation) p += Problem.LOCATION_NOT_SET
         if (!foregroundLocationOk(c)) p += Problem.LOCATION_PERMISSION
         else if (!backgroundLocationOk(c)) p += Problem.BACKGROUND_LOCATION_PERMISSION
-        if (!config.activityRecognitionEnabled && !config.androidAutoEnabled) p += Problem.NO_SIGNAL_ENABLED
+        val carBluetoothSignal = config.carBluetoothEnabled && config.carDeviceAddress != null
+        if (!config.activityRecognitionEnabled && !config.androidAutoEnabled && !carBluetoothSignal) {
+            p += Problem.NO_SIGNAL_ENABLED
+        }
         if (config.activityRecognitionEnabled && !activityRecognitionOk(c)) p += Problem.ACTIVITY_PERMISSION
         if (!config.testMode) {
             if (!phoneOk(c)) p += Problem.PHONE_PERMISSION
@@ -78,7 +81,7 @@ object PermissionMonitor {
         if (!notificationsOk(c)) p += Problem.NOTIFICATION_PERMISSION
         val batteryExempt = ignoringBatteryOptimizations(c)
         var carWakeBlocked = false
-        if (config.androidAutoEnabled) {
+        if (config.androidAutoEnabled || config.carBluetoothEnabled) {
             when {
                 config.carDeviceAddress == null -> p += Problem.CAR_NOT_SELECTED
                 !bluetoothOk(c) -> p += Problem.BLUETOOTH_PERMISSION

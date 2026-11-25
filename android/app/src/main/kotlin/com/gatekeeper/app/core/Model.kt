@@ -37,10 +37,14 @@ enum class TriggerSource {
     ENTER_WHILE_IN_VEHICLE_DELAYED,
     /** ENTER while Android Auto was already connected: delayed path (AA is not proof of driving). */
     ENTER_WITH_ANDROID_AUTO,
+    /** ENTER while connected to the chosen car's Bluetooth: delayed path. */
+    ENTER_WITH_CAR_BLUETOOTH,
     /** Scenario A: already inside, IN_VEHICLE became active. */
     ACTIVITY_IN_VEHICLE,
     /** Scenario A/C: already inside, Android Auto connected. */
     ANDROID_AUTO,
+    /** Already inside, the phone connected to the chosen car's Bluetooth (works without Android Auto). */
+    CAR_BLUETOOTH,
 }
 
 enum class CallOutcome {
@@ -74,6 +78,8 @@ data class EngineConfig(
     val immediateTriggerEnabled: Boolean = true,
     val androidAutoEnabled: Boolean = true,
     val activityRecognitionEnabled: Boolean = true,
+    /** Being connected to the chosen car's Bluetooth counts as a vehicle signal (needs a car chosen). */
+    val carBluetoothEnabled: Boolean = true,
     val testMode: Boolean = false,
     /** Transitions arriving this soon after (re)registration are treated as state sync, not real transitions. */
     val initialSyncWindowMs: Long = 30_000,
@@ -160,7 +166,8 @@ data class EngineState(
 
     fun vehicleSignalActive(config: EngineConfig): Boolean =
         (config.activityRecognitionEnabled && inVehicle == SignalState.ACTIVE) ||
-            (config.androidAutoEnabled && androidAuto == SignalState.ACTIVE)
+            (config.androidAutoEnabled && androidAuto == SignalState.ACTIVE) ||
+            (config.carBluetoothEnabled && carBluetoothConnected)
 
     fun inCooldown(config: EngineConfig, now: Long): Boolean =
         lastCallAt != null && now < lastCallAt + config.cooldownMs

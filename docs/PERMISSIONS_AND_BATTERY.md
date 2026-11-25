@@ -8,10 +8,10 @@ GateKeeper asks for each permission in context during onboarding, and again from
 |---|---|---|
 | Precise location (`ACCESS_FINE_LOCATION`) | Set the parking spot; geofencing | No parking detection |
 | Location **"Allow all the time"** (`ACCESS_BACKGROUND_LOCATION`) | Geofence events are delivered to a closed app only with this. On Android 11+ Android opens a settings page: choose **Allow all the time** | Detection works only while the app is open (monitoring cannot start) |
-| Physical activity (`ACTIVITY_RECOGNITION`) | IN_VEHICLE transitions, so walking in never calls | No in-vehicle detection (only Android Auto can trigger) |
+| Physical activity (`ACTIVITY_RECOGNITION`) | IN_VEHICLE transitions, so walking in never calls | No in-vehicle detection (only car Bluetooth and Android Auto can trigger) |
 | Phone (`CALL_PHONE`, `READ_PHONE_STATE`) | Place the call; list SIMs; map SIM → PhoneAccount; confirm dialling | No calls or SIM selection (test mode still works) |
 | Notifications (`POST_NOTIFICATIONS`, Android 13+) | Call errors, tap-to-call fallback, decision-window notice | Problems are silent; the fallback cannot be shown |
-| Nearby devices (`BLUETOOTH_CONNECT`, Android 12+) | Receive the car Bluetooth connect broadcast | Getting into the car does not wake the app; only IN_VEHICLE does |
+| Nearby devices (`BLUETOOTH_CONNECT`, Android 12+) | Receive the car Bluetooth connect broadcast | Connecting to the car is not noticed; only IN_VEHICLE (and Android Auto while the app is open) can trigger |
 
 ## Install-time permissions (no prompt)
 

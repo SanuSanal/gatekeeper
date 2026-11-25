@@ -12,6 +12,7 @@ class FakePlatform implements GateKeeperPlatform {
     immediateTrigger: true,
     androidAutoEnabled: true,
     activityRecognitionEnabled: true,
+    carBluetoothEnabled: true,
     testMode: false,
     carDeviceAssociated: false,
     onboardingComplete: true,

@@ -62,6 +62,7 @@ class HostApiImpl(
             immediateTrigger = c.immediateTrigger,
             androidAutoEnabled = c.androidAutoEnabled,
             activityRecognitionEnabled = c.activityRecognitionEnabled,
+            carBluetoothEnabled = c.carBluetoothEnabled,
             testMode = c.testMode,
             carDeviceName = c.carDeviceName,
             carDeviceAssociated = c.carDeviceAddress != null,
@@ -99,6 +100,7 @@ class HostApiImpl(
                 immediateTrigger = settings.immediateTrigger,
                 androidAutoEnabled = settings.androidAutoEnabled,
                 activityRecognitionEnabled = settings.activityRecognitionEnabled,
+                carBluetoothEnabled = settings.carBluetoothEnabled,
                 testMode = settings.testMode,
                 onboardingComplete = settings.onboardingComplete,
             )
@@ -269,6 +271,8 @@ class HostApiImpl(
             )
         }
         runtime.log(LogCategory.BLUETOOTH, "Car selected: ${name.ifBlank { "unnamed device" }}")
+        // The old car's disconnect would be filtered out by address, so drop its connection state now.
+        if (!keepAssociation) runtime.forgetCarConnection("car changed")
         pushStatus()
     }
 
@@ -277,6 +281,7 @@ class HostApiImpl(
         runtime.carAssociation.disassociate(c.carDeviceAddress, c.carAssociationId)
         runtime.configStore.update { it.copy(carDeviceAddress = null, carDeviceName = null, carAssociationId = null) }
         runtime.log(LogCategory.BLUETOOTH, "Car removed")
+        runtime.forgetCarConnection("car removed")
         pushStatus()
     }
 

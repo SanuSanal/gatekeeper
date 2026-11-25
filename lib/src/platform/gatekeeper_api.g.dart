@@ -120,6 +120,7 @@ class SettingsMessage {
     required this.immediateTrigger,
     required this.androidAutoEnabled,
     required this.activityRecognitionEnabled,
+    required this.carBluetoothEnabled,
     required this.testMode,
     this.carDeviceName,
     required this.carDeviceAssociated,
@@ -149,6 +150,9 @@ class SettingsMessage {
 
   bool activityRecognitionEnabled;
 
+  /// Being connected to the chosen car's Bluetooth counts as a vehicle signal (only with a car chosen).
+  bool carBluetoothEnabled;
+
   bool testMode;
 
   /// Read-only on save: the car is chosen with selectCar/clearCar. True when a car is selected.
@@ -171,6 +175,7 @@ class SettingsMessage {
       immediateTrigger,
       androidAutoEnabled,
       activityRecognitionEnabled,
+      carBluetoothEnabled,
       testMode,
       carDeviceName,
       carDeviceAssociated,
@@ -195,10 +200,11 @@ class SettingsMessage {
       immediateTrigger: result[8]! as bool,
       androidAutoEnabled: result[9]! as bool,
       activityRecognitionEnabled: result[10]! as bool,
-      testMode: result[11]! as bool,
-      carDeviceName: result[12] as String?,
-      carDeviceAssociated: result[13]! as bool,
-      onboardingComplete: result[14]! as bool,
+      carBluetoothEnabled: result[11]! as bool,
+      testMode: result[12]! as bool,
+      carDeviceName: result[13] as String?,
+      carDeviceAssociated: result[14]! as bool,
+      onboardingComplete: result[15]! as bool,
     );
   }
 
@@ -211,7 +217,7 @@ class SettingsMessage {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(gateNumber, other.gateNumber) && _deepEquals(simSubscriptionId, other.simSubscriptionId) && _deepEquals(simLabel, other.simLabel) && _deepEquals(latitude, other.latitude) && _deepEquals(longitude, other.longitude) && _deepEquals(radiusMeters, other.radiusMeters) && _deepEquals(delaySeconds, other.delaySeconds) && _deepEquals(cooldownMinutes, other.cooldownMinutes) && _deepEquals(immediateTrigger, other.immediateTrigger) && _deepEquals(androidAutoEnabled, other.androidAutoEnabled) && _deepEquals(activityRecognitionEnabled, other.activityRecognitionEnabled) && _deepEquals(testMode, other.testMode) && _deepEquals(carDeviceName, other.carDeviceName) && _deepEquals(carDeviceAssociated, other.carDeviceAssociated) && _deepEquals(onboardingComplete, other.onboardingComplete);
+    return _deepEquals(gateNumber, other.gateNumber) && _deepEquals(simSubscriptionId, other.simSubscriptionId) && _deepEquals(simLabel, other.simLabel) && _deepEquals(latitude, other.latitude) && _deepEquals(longitude, other.longitude) && _deepEquals(radiusMeters, other.radiusMeters) && _deepEquals(delaySeconds, other.delaySeconds) && _deepEquals(cooldownMinutes, other.cooldownMinutes) && _deepEquals(immediateTrigger, other.immediateTrigger) && _deepEquals(androidAutoEnabled, other.androidAutoEnabled) && _deepEquals(activityRecognitionEnabled, other.activityRecognitionEnabled) && _deepEquals(carBluetoothEnabled, other.carBluetoothEnabled) && _deepEquals(testMode, other.testMode) && _deepEquals(carDeviceName, other.carDeviceName) && _deepEquals(carDeviceAssociated, other.carDeviceAssociated) && _deepEquals(onboardingComplete, other.onboardingComplete);
   }
 
   @override
@@ -220,7 +226,7 @@ class SettingsMessage {
 
   @override
   String toString() {
-    return 'SettingsMessage(gateNumber: $gateNumber, simSubscriptionId: $simSubscriptionId, simLabel: $simLabel, latitude: $latitude, longitude: $longitude, radiusMeters: $radiusMeters, delaySeconds: $delaySeconds, cooldownMinutes: $cooldownMinutes, immediateTrigger: $immediateTrigger, androidAutoEnabled: $androidAutoEnabled, activityRecognitionEnabled: $activityRecognitionEnabled, testMode: $testMode, carDeviceName: $carDeviceName, carDeviceAssociated: $carDeviceAssociated, onboardingComplete: $onboardingComplete)';
+    return 'SettingsMessage(gateNumber: $gateNumber, simSubscriptionId: $simSubscriptionId, simLabel: $simLabel, latitude: $latitude, longitude: $longitude, radiusMeters: $radiusMeters, delaySeconds: $delaySeconds, cooldownMinutes: $cooldownMinutes, immediateTrigger: $immediateTrigger, androidAutoEnabled: $androidAutoEnabled, activityRecognitionEnabled: $activityRecognitionEnabled, carBluetoothEnabled: $carBluetoothEnabled, testMode: $testMode, carDeviceName: $carDeviceName, carDeviceAssociated: $carDeviceAssociated, onboardingComplete: $onboardingComplete)';
   }
 }
 

@@ -202,8 +202,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: !c.settings.carDeviceAssociated
                         ? 'Not chosen'
                         : (s?.carBluetoothConnected == true ? 'Connected' : 'Not connected'),
-                    detail: c.settings.carDeviceAssociated ? c.settings.carDeviceName : null,
-                    active: s?.carBluetoothConnected == true,
+                    // Connected only counts as a vehicle signal when the switch is on.
+                    detail: c.settings.carDeviceAssociated
+                        ? (c.settings.carBluetoothEnabled ? c.settings.carDeviceName : 'Not used as a signal')
+                        : null,
+                    active: c.settings.carBluetoothEnabled && s?.carBluetoothConnected == true,
                   ),
                 ],
               ),

@@ -9,6 +9,12 @@ Everything below comes from reading the platform documentation and the library i
 - To catch "got into the car at home" without a service running all the time, the **car's Bluetooth connection** (an implicit-broadcast exception) wakes the app. If Android Auto connects more than about 150 s after Bluetooth, it is missed; IN_VEHICLE still covers that case once the car moves.
 - No undocumented Android Auto broadcasts or internals are used.
 
+## Car Bluetooth
+
+- With *Car Bluetooth counts as driving* on, connecting to the chosen car counts as a vehicle signal on its own, so it works for cars without Android Auto. It reacts to the Bluetooth link (ACL), not to a specific profile, so a car that connects only for calls counts too.
+- GateKeeper can't tell whether a connected car is moving. Sitting in the parked car inside the geofence with Bluetooth on counts like starting to drive (one call, then nothing until the car has been disconnected for 5 minutes).
+- Android has no public way to ask whether a device is connected right now, so the state comes only from connect/disconnect broadcasts. A car that was already connected when the phone booted is not seen until it reconnects; the state is cleared on boot so a stale "connected" can never trigger a call.
+
 ## Activity Recognition
 
 - IN_VEHICLE detection typically takes **30 s to a few minutes** and needs the car to be moving. In a parking lot the departure trigger may only fire near the gate.

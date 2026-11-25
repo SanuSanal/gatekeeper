@@ -63,6 +63,19 @@ void main() {
       expect(Validators.settings(s), hasLength(1));
     });
 
+    test('car Bluetooth counts as a vehicle signal once a car is chosen', () {
+      const noCar = GateSettings(androidAutoEnabled: false, activityRecognitionEnabled: false);
+      expect(Validators.settings(noCar), hasLength(1), reason: 'switch on but no car chosen');
+      const withCar = GateSettings(
+        androidAutoEnabled: false,
+        activityRecognitionEnabled: false,
+        carDeviceAssociated: true,
+        carDeviceName: 'My Car',
+      );
+      expect(Validators.settings(withCar), isEmpty);
+      expect(Validators.settings(withCar.copyWith(carBluetoothEnabled: false)), hasLength(1));
+    });
+
     test('out-of-range values are reported and clamps work', () {
       const s = GateSettings(radiusMeters: 50, delaySeconds: 0, cooldownMinutes: 99);
       expect(Validators.settings(s), hasLength(3));

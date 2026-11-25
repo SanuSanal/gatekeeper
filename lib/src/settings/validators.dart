@@ -89,8 +89,8 @@ abstract final class Validators {
     if (s.cooldownMinutes < Limits.cooldownMin || s.cooldownMinutes > Limits.cooldownMax) {
       errors.add('Cooldown must be ${Limits.cooldownMin}–${Limits.cooldownMax} min');
     }
-    if (!s.androidAutoEnabled && !s.activityRecognitionEnabled) {
-      errors.add('Enable at least one vehicle signal (Android Auto or Activity Recognition)');
+    if (!s.androidAutoEnabled && !s.activityRecognitionEnabled && !(s.carBluetoothEnabled && s.carDeviceAssociated)) {
+      errors.add('Enable at least one vehicle signal (Activity Recognition, Android Auto or car Bluetooth)');
     }
     return errors;
   }

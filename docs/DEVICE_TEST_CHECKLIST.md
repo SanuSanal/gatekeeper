@@ -34,6 +34,13 @@ Record for each: device model, Android version, OEM skin, pass/fail, and the rel
 - [ ] Wired AA and wireless AA (if available). Note the seconds between Bluetooth and AA.
 - [ ] Opening the app while sitting in an already-connected car does **not** call.
 
+## 4b. Car Bluetooth without Android Auto
+
+- [ ] Android Auto off in Settings (or a car without it), car chosen, parked inside for more than 5 min, process killed → get in the car → `Car Bluetooth connected` → call after 5 s (`CAR_BLUETOOTH`).
+- [ ] Drive home connected to the car → `ENTER geofence` → call after 5 s (`ENTER_WITH_CAR_BLUETOOTH`) if IN_VEHICLE hasn't already triggered an immediate call.
+- [ ] Turn the car off and on again within 5 min → no second call.
+- [ ] Restart the phone while connected to the car → log shows `Car Bluetooth state cleared (phone restarted)`.
+
 ## 5. Cancellation (Scenario D)
 
 - [ ] During the 5 s delay (test mode makes this easy): Stop monitoring → cancelled.

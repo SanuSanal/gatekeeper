@@ -215,6 +215,8 @@ data class SettingsMessage (
   val immediateTrigger: Boolean,
   val androidAutoEnabled: Boolean,
   val activityRecognitionEnabled: Boolean,
+  /** Being connected to the chosen car's Bluetooth counts as a vehicle signal (only with a car chosen). */
+  val carBluetoothEnabled: Boolean,
   val testMode: Boolean,
   /** Read-only on save: the car is chosen with selectCar/clearCar. True when a car is selected. */
   val carDeviceName: String? = null,
@@ -235,11 +237,12 @@ data class SettingsMessage (
       val immediateTrigger = pigeonVar_list[8] as Boolean
       val androidAutoEnabled = pigeonVar_list[9] as Boolean
       val activityRecognitionEnabled = pigeonVar_list[10] as Boolean
-      val testMode = pigeonVar_list[11] as Boolean
-      val carDeviceName = pigeonVar_list[12] as String?
-      val carDeviceAssociated = pigeonVar_list[13] as Boolean
-      val onboardingComplete = pigeonVar_list[14] as Boolean
-      return SettingsMessage(gateNumber, simSubscriptionId, simLabel, latitude, longitude, radiusMeters, delaySeconds, cooldownMinutes, immediateTrigger, androidAutoEnabled, activityRecognitionEnabled, testMode, carDeviceName, carDeviceAssociated, onboardingComplete)
+      val carBluetoothEnabled = pigeonVar_list[11] as Boolean
+      val testMode = pigeonVar_list[12] as Boolean
+      val carDeviceName = pigeonVar_list[13] as String?
+      val carDeviceAssociated = pigeonVar_list[14] as Boolean
+      val onboardingComplete = pigeonVar_list[15] as Boolean
+      return SettingsMessage(gateNumber, simSubscriptionId, simLabel, latitude, longitude, radiusMeters, delaySeconds, cooldownMinutes, immediateTrigger, androidAutoEnabled, activityRecognitionEnabled, carBluetoothEnabled, testMode, carDeviceName, carDeviceAssociated, onboardingComplete)
     }
   }
   fun toList(): List<Any?> {
@@ -255,6 +258,7 @@ data class SettingsMessage (
       immediateTrigger,
       androidAutoEnabled,
       activityRecognitionEnabled,
+      carBluetoothEnabled,
       testMode,
       carDeviceName,
       carDeviceAssociated,
@@ -269,7 +273,7 @@ data class SettingsMessage (
       return true
     }
     val other = other as SettingsMessage
-    return GateKeeperApiPigeonUtils.deepEquals(this.gateNumber, other.gateNumber) && GateKeeperApiPigeonUtils.deepEquals(this.simSubscriptionId, other.simSubscriptionId) && GateKeeperApiPigeonUtils.deepEquals(this.simLabel, other.simLabel) && GateKeeperApiPigeonUtils.deepEquals(this.latitude, other.latitude) && GateKeeperApiPigeonUtils.deepEquals(this.longitude, other.longitude) && GateKeeperApiPigeonUtils.deepEquals(this.radiusMeters, other.radiusMeters) && GateKeeperApiPigeonUtils.deepEquals(this.delaySeconds, other.delaySeconds) && GateKeeperApiPigeonUtils.deepEquals(this.cooldownMinutes, other.cooldownMinutes) && GateKeeperApiPigeonUtils.deepEquals(this.immediateTrigger, other.immediateTrigger) && GateKeeperApiPigeonUtils.deepEquals(this.androidAutoEnabled, other.androidAutoEnabled) && GateKeeperApiPigeonUtils.deepEquals(this.activityRecognitionEnabled, other.activityRecognitionEnabled) && GateKeeperApiPigeonUtils.deepEquals(this.testMode, other.testMode) && GateKeeperApiPigeonUtils.deepEquals(this.carDeviceName, other.carDeviceName) && GateKeeperApiPigeonUtils.deepEquals(this.carDeviceAssociated, other.carDeviceAssociated) && GateKeeperApiPigeonUtils.deepEquals(this.onboardingComplete, other.onboardingComplete)
+    return GateKeeperApiPigeonUtils.deepEquals(this.gateNumber, other.gateNumber) && GateKeeperApiPigeonUtils.deepEquals(this.simSubscriptionId, other.simSubscriptionId) && GateKeeperApiPigeonUtils.deepEquals(this.simLabel, other.simLabel) && GateKeeperApiPigeonUtils.deepEquals(this.latitude, other.latitude) && GateKeeperApiPigeonUtils.deepEquals(this.longitude, other.longitude) && GateKeeperApiPigeonUtils.deepEquals(this.radiusMeters, other.radiusMeters) && GateKeeperApiPigeonUtils.deepEquals(this.delaySeconds, other.delaySeconds) && GateKeeperApiPigeonUtils.deepEquals(this.cooldownMinutes, other.cooldownMinutes) && GateKeeperApiPigeonUtils.deepEquals(this.immediateTrigger, other.immediateTrigger) && GateKeeperApiPigeonUtils.deepEquals(this.androidAutoEnabled, other.androidAutoEnabled) && GateKeeperApiPigeonUtils.deepEquals(this.activityRecognitionEnabled, other.activityRecognitionEnabled) && GateKeeperApiPigeonUtils.deepEquals(this.carBluetoothEnabled, other.carBluetoothEnabled) && GateKeeperApiPigeonUtils.deepEquals(this.testMode, other.testMode) && GateKeeperApiPigeonUtils.deepEquals(this.carDeviceName, other.carDeviceName) && GateKeeperApiPigeonUtils.deepEquals(this.carDeviceAssociated, other.carDeviceAssociated) && GateKeeperApiPigeonUtils.deepEquals(this.onboardingComplete, other.onboardingComplete)
   }
 
   override fun hashCode(): Int {
@@ -285,6 +289,7 @@ data class SettingsMessage (
     result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.immediateTrigger)
     result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.androidAutoEnabled)
     result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.activityRecognitionEnabled)
+    result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.carBluetoothEnabled)
     result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.testMode)
     result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.carDeviceName)
     result = 31 * result + GateKeeperApiPigeonUtils.deepHash(this.carDeviceAssociated)
@@ -292,7 +297,7 @@ data class SettingsMessage (
     return result
   }
   override fun toString(): String {
-    return "SettingsMessage(gateNumber=$gateNumber, simSubscriptionId=$simSubscriptionId, simLabel=$simLabel, latitude=$latitude, longitude=$longitude, radiusMeters=$radiusMeters, delaySeconds=$delaySeconds, cooldownMinutes=$cooldownMinutes, immediateTrigger=$immediateTrigger, androidAutoEnabled=$androidAutoEnabled, activityRecognitionEnabled=$activityRecognitionEnabled, testMode=$testMode, carDeviceName=$carDeviceName, carDeviceAssociated=$carDeviceAssociated, onboardingComplete=$onboardingComplete)"
+    return "SettingsMessage(gateNumber=$gateNumber, simSubscriptionId=$simSubscriptionId, simLabel=$simLabel, latitude=$latitude, longitude=$longitude, radiusMeters=$radiusMeters, delaySeconds=$delaySeconds, cooldownMinutes=$cooldownMinutes, immediateTrigger=$immediateTrigger, androidAutoEnabled=$androidAutoEnabled, activityRecognitionEnabled=$activityRecognitionEnabled, carBluetoothEnabled=$carBluetoothEnabled, testMode=$testMode, carDeviceName=$carDeviceName, carDeviceAssociated=$carDeviceAssociated, onboardingComplete=$onboardingComplete)"
   }
 }
 

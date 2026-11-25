@@ -25,6 +25,7 @@ class SettingsMessage {
     required this.immediateTrigger,
     required this.androidAutoEnabled,
     required this.activityRecognitionEnabled,
+    required this.carBluetoothEnabled,
     required this.testMode,
     this.carDeviceName,
     required this.carDeviceAssociated,
@@ -44,6 +45,9 @@ class SettingsMessage {
   bool immediateTrigger;
   bool androidAutoEnabled;
   bool activityRecognitionEnabled;
+
+  /// Being connected to the chosen car's Bluetooth counts as a vehicle signal (only with a car chosen).
+  bool carBluetoothEnabled;
   bool testMode;
 
   /// Read-only on save: the car is chosen with selectCar/clearCar. True when a car is selected.

@@ -30,7 +30,7 @@ abstract final class Problems {
     ),
     'NO_SIGNAL_ENABLED': ProblemInfo(
       'No vehicle signal enabled',
-      'Enable Android Auto or Activity Recognition detection.',
+      'Enable Activity Recognition, Android Auto, or car Bluetooth with a car chosen.',
     ),
     'GEOFENCE_REGISTRATION_FAILED': ProblemInfo(
       'Geofence could not be registered',
@@ -48,7 +48,7 @@ abstract final class Problems {
     ),
     'CAR_NOT_SELECTED': ProblemInfo(
       'Car Bluetooth not chosen',
-      'Android Auto is only checked when in-vehicle is detected or the app is open.',
+      'Choose your car so connecting to it can trigger the gate call, with or without Android Auto.',
       blocking: false,
     ),
     'CAR_WAKE_BLOCKED': ProblemInfo(

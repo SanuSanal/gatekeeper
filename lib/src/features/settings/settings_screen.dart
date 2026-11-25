@@ -330,7 +330,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Text(s.carDeviceAssociated ? (s.carDeviceName ?? 'Car') : 'Car Bluetooth'),
               subtitle: Text(
                 s.carDeviceAssociated
-                    ? 'Connecting to this car wakes GateKeeper to check Android Auto'
+                    ? 'GateKeeper reacts when the phone connects to this car'
                     : 'Choose your car from your paired Bluetooth devices (no always-on service)',
               ),
               onTap: _chooseCar,
@@ -347,6 +347,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     )
                   : FilledButton.tonal(onPressed: _chooseCar, child: const Text('Choose')),
+            ),
+            SwitchListTile(
+              secondary: const Icon(Icons.bluetooth_connected_rounded),
+              title: const Text('Car Bluetooth counts as driving'),
+              subtitle: Text(
+                s.carDeviceAssociated
+                    ? 'Connecting to your car inside the parking area triggers the call, even without Android Auto'
+                    : 'Choose your car above to use this',
+              ),
+              value: s.carBluetoothEnabled,
+              onChanged: (v) => _save(s.copyWith(carBluetoothEnabled: v)),
             ),
             if (c.status?.problems.contains('CAR_WAKE_BLOCKED') ?? false)
               ListTile(

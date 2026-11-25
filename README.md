@@ -52,12 +52,13 @@ Many gated communities and parking lots use a **call-to-open** gate: you ring a 
 GateKeeper calls only when **both** of these are true:
 
 1. you are **inside** the parking geofence (a circle around your spot, 150 m by default), **and**
-2. a **vehicle signal** is active: Android's activity detection says you are *in a vehicle*, or your phone is connected to **Android Auto**.
+2. a **vehicle signal** is active: Android's activity detection says you are *in a vehicle*, your phone is connected to **your car's Bluetooth**, or it's connected to **Android Auto**. None of them needs the others, so a car without Android Auto works too.
 
 | Situation | What happens |
 |---|---|
 | **Arriving:** you drive into the geofence and you're already detected as driving | Calls **immediately** |
-| **Leaving:** you're parked inside and you start driving, or Android Auto connects | Waits **5 s**, re-checks everything, then calls |
+| **Arriving** connected to your car's Bluetooth or Android Auto, before driving is detected | Waits **5 s**, re-checks everything, then calls |
+| **Leaving:** you're parked inside and you get into the car (its Bluetooth connects), start driving, or Android Auto connects | Waits **5 s**, re-checks everything, then calls |
 | **Walking** into the area | Never calls |
 | Both signals fire at once, events arrive twice or out of order | Still exactly **one** call |
 | You leave the area, stop monitoring, or the signal drops during the 5 s wait | Call **cancelled** |
@@ -71,7 +72,7 @@ GateKeeper doesn't keep a service running or show a permanent notification while
 
 - **Geofence** and **in-vehicle** events are delivered by Google Play services, even when the app is closed.
 - **Getting into the car** is detected through your car's **Bluetooth connection**. You choose your car once from the phone's paired Bluetooth devices.
-- Only when something relevant happens does a short check run (up to 2.5 min, with a small notification) to look at Android Auto and place the call.
+- Only when something relevant happens does a short check run (up to 2.5 min, with a small notification) to wait the 5 s, look at Android Auto and place the call.
 
 ## Features
 
@@ -79,7 +80,7 @@ GateKeeper doesn't keep a service running or show a permanent notification while
 - Exact **SIM selection** on dual-SIM phones. If the chosen SIM is missing, it does **not** call and tells you; it never silently switches SIM
 - Easy location picker: drag the map under a fixed pin, search an address, use your current location, or paste coordinates or a Google Maps link
 - Adjustable radius (100–1000 m), delay (1–30 s) and cooldown (1–30 min)
-- Toggles for Android Auto detection, Activity Recognition and the immediate arrival trigger
+- Toggles for Activity Recognition, car Bluetooth, Android Auto detection and the immediate arrival trigger
 - **Test mode** with an event simulator: same logic, never dials
 - **Activity log** (Settings → Test & diagnostics) of every geofence, vehicle, Android Auto and Bluetooth event, every trigger decision and every call attempt
 - **Tap-to-call fallback** if Android blocks the background call
@@ -216,7 +217,7 @@ lib/                      Flutter UI, settings, validation, update checker
 android/app/src/main/kotlin/com/gatekeeper/app/
   core/                   Pure-Kotlin trigger state machine (no Android imports)
   geofence/ activity/     Play services geofencing & activity transitions
-  car/                    Android Auto (CarConnection), car Bluetooth wake
+  car/                    Android Auto (CarConnection), car Bluetooth connect/disconnect
   telephony/              SIM discovery, call placement, call-state confirmation
   service/                Short "decision window" foreground service
   update/                 Verified APK download + installer hand-off
@@ -239,7 +240,9 @@ docs/                     Architecture, permissions, limitations, test checklist
 
 **Will it call when I walk home?** No. A vehicle signal is required, and walking into the geofence never calls.
 
-**Why didn't it call when I left?** Activity detection needs the car moving and can take 30–90 s. Choose your car's Bluetooth in Settings so Android Auto can trigger it sooner. The Activity log shows why each trigger was or wasn't used.
+**Why didn't it call when I left?** Activity detection needs the car moving and can take 30–90 s, so you may already be out of the geofence. Choose your car's Bluetooth in Settings: the call then goes out about 5 s after the phone connects to the car, with or without Android Auto. The Activity log shows why each trigger was or wasn't used.
+
+**Will it call if I just sit in my parked car?** If the phone connects to the car's Bluetooth inside the geofence, yes, once (the same as starting to drive). It won't call again until the car has been disconnected for 5 minutes. Turn off **Car Bluetooth counts as driving** if that's a problem for you.
 
 **Can it call emergency numbers?** No. They are refused when saving and again before dialling.
 

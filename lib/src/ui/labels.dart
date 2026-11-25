@@ -35,8 +35,10 @@ abstract final class Labels {
         'ENTER_WHILE_IN_VEHICLE' => 'Arrived while driving',
         'ENTER_WHILE_IN_VEHICLE_DELAYED' => 'Arrived while driving (delayed)',
         'ENTER_WITH_ANDROID_AUTO' => 'Arrived with Android Auto',
+        'ENTER_WITH_CAR_BLUETOOTH' => 'Arrived connected to the car',
         'ACTIVITY_IN_VEHICLE' => 'In vehicle inside parking',
         'ANDROID_AUTO' => 'Android Auto connected inside parking',
+        'CAR_BLUETOOTH' => 'Car Bluetooth connected inside parking',
         _ => s ?? '—',
       };
 

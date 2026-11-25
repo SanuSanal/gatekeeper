@@ -317,7 +317,7 @@
       <div class="card">
         <span class="tag t-delay">After 5 s check</span>
         <h3>Leaving the spot</h3>
-        <p>You're parked inside and start driving, or your phone connects to Android Auto. GateKeeper waits 5 seconds, re-checks everything, then calls.</p>
+        <p>You're parked inside and get into the car (its Bluetooth connects), start driving, or your phone connects to Android Auto. GateKeeper waits 5 seconds, re-checks everything, then calls.</p>
       </div>
       <div class="card">
         <span class="tag t-never">Never</span>
@@ -329,7 +329,7 @@
     <div class="logic" style="margin-top:44px">
       <div class="chip"><b>Inside the geofence</b><span>Google Play geofencing, 100–1000 m</span></div>
       <div class="op">AND</div>
-      <div class="chip"><b>In a vehicle</b><span>Activity Recognition <code>IN_VEHICLE</code> or Android Auto</span></div>
+      <div class="chip"><b>In a vehicle</b><span>Activity Recognition <code>IN_VEHICLE</code>, your car's Bluetooth, or Android Auto</span></div>
       <div class="op">=</div>
       <div class="chip result"><b>One gate call</b><span>then a cooldown (3 min by default)</span></div>
     </div>
@@ -372,7 +372,7 @@
       </div>
       <ol>
         <li><span>Google Play services reports geofence crossings and in-vehicle changes, even with the app closed.</span></li>
-        <li><span>Your car's Bluetooth connection wakes the app when you get in. You choose your car once from your paired devices.</span></li>
+        <li><span>Connecting to your car's Bluetooth counts as getting in, with or without Android Auto. You choose your car once from your paired devices.</span></li>
         <li><span>A short check (up to 2.5 min) looks for Android Auto, waits, re-checks and calls. Then it stops.</span></li>
       </ol>
     </div>

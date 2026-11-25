@@ -9,12 +9,12 @@ import com.gatekeeper.app.EngineRuntime
 import com.gatekeeper.app.core.Event
 
 /**
- * Wakes the app when the phone connects to / disconnects from the associated car head unit.
+ * Reports when the phone connects to / disconnects from the chosen car.
  *
  * ACTION_ACL_CONNECTED / ACTION_ACL_DISCONNECTED are on Android's implicit-broadcast exception list,
  * so this manifest receiver runs even when the process is dead (BLUETOOTH_CONNECT required on 12+).
- * Car Bluetooth is only a wake signal: it lets us start a short decision window and check
- * Android Auto. It never qualifies as a vehicle signal on its own.
+ * Being connected is a vehicle signal when EngineConfig.carBluetoothEnabled is on (works without
+ * Android Auto); otherwise the connection only wakes a short decision window to check Android Auto.
  */
 class CarBluetoothReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

@@ -76,7 +76,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     body: 'GateKeeper phones your gate automatically when you drive into your parking area, '
                         'or when you get into your car while parked there.\n\n'
                         'It only calls when you are inside the parking geofence AND a vehicle signal is active '
-                        '(driving detected, or Android Auto connected). Walking in never calls. '
+                        '(driving detected, connected to your car’s Bluetooth, or Android Auto). '
+                        'Walking in never calls. '
                         'Each arrival makes at most one call, with a cooldown.\n\n'
                         'Everything stays on this phone. No account, no tracking.',
                     primary: FilledButton(onPressed: _next, child: const Text('Get started')),

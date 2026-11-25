@@ -45,7 +45,7 @@
 | Geofence ENTER/EXIT | `GeofencingClient`, PendingIntent → `GeofenceReceiver` | Yes | n/a (location) |
 | IN_VEHICLE ENTER/EXIT | Activity Recognition Transition API → `ActivityTransitionReceiver` | Yes | Yes |
 | Android Auto | `CarConnection` LiveData (public API) | **No**: dynamic receiver only | Yes |
-| Car Bluetooth ACL connect | `ACTION_ACL_CONNECTED` (implicit-broadcast exception) → `CarBluetoothReceiver` | Yes | **No**, wake only |
+| Car Bluetooth ACL connect/disconnect | `ACTION_ACL_CONNECTED` / `_DISCONNECTED` (implicit-broadcast exception) → `CarBluetoothReceiver` | Yes | Yes, when *Car Bluetooth counts as driving* is on (the default) and a car is chosen; otherwise wake only |
 | Boot / app update | `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED` | Yes | n/a (re-registers) |
 
 **Decision window.** No service runs while you are parked and idle. A wake event that matters (genuine geofence ENTER, car Bluetooth connect while inside, IN_VEHICLE while inside, a pending trigger) starts `DecisionWindowService`. This is a `connectedDevice` foreground service that lasts at most 150 s and shows a low-importance notification with a **Stop monitoring** action. It observes Android Auto, keeps the process alive for the delay timer and hosts the call. Starting it from the background relies on documented exemptions: geofence and activity-transition events and, for the car Bluetooth wake-up, the app's battery-optimisation exemption (the app prompts for it with `CAR_WAKE_BLOCKED`). The car itself is chosen from the phone's bonded-device list (`BluetoothAdapter.getBondedDevices()`, names via `BLUETOOTH_CONNECT`).
@@ -69,15 +69,16 @@ MONITORING_OUTSIDE ── genuine ENTER (no signal) ──► WAITING_FOR_VEHICL
 
 Rules (see `TriggerEngine.kt`):
 
-1. **Genuine ENTER** starts a new inside-session with `armed = true`. If IN_VEHICLE is active (and the immediate trigger is enabled), call now (Scenario B, which takes priority). With immediate disabled, or with only Android Auto connected, use the delayed path: Android Auto is never proof of driving.
+1. **Genuine ENTER** starts a new inside-session with `armed = true`. If IN_VEHICLE is active (and the immediate trigger is enabled), call now (Scenario B, which takes priority). With immediate disabled, or with only Android Auto or car Bluetooth connected, use the delayed path: neither is proof of driving.
 2. **Initial sync.** Transitions within 30 s of geofence or activity registration (start, reboot, settings change) only record state. They never fire Scenario B from possibly stale vehicle state.
 3. **Rising edge while inside and armed** schedules one pending call. A second signal while pending is merged, not duplicated.
 4. **Revalidation** after the delay re-checks everything, including a fresh SIM and permission reconcile. The runtime reconciles prerequisites before every external event and timer.
 5. **One call per episode.** A call disarms the session. It re-arms on a genuine EXIT, or once every vehicle signal has been inactive for ≥ 5 min (so getting back into the car next morning works, but signal flapping at the gate does not call twice). The **cooldown** blocks all calls regardless.
 6. **Ordering.** Each source (geofence, vehicle, AA, Bluetooth) is monotonic by event time. An older event delivered late is dropped, and an event repeating the current state is a no-op. Activity events carry `elapsedRealtimeNanos` and geofence events use the triggering fix time.
 7. **Android Auto first reading.** When the observer starts, `UNKNOWN → ACTIVE` counts as a new connection only if the car's Bluetooth connected within the last 150 s. Otherwise it may be a car that has been connected for a long time (for example, the UI opened in a parked car).
-8. **Write-ahead.** `calling = true` and `lastCallAt` are committed before `placeCall()` runs. If the process dies, `ProcessRestored` marks the result `UNKNOWN_PROCESS_DIED` and never retries. A restored pending timer more than 15 s past its deadline is discarded, and an earlier one is rescheduled.
-9. **Test mode.** The engine emits `SimulateCall` instead of `PlaceCall`, and the runtime refuses to dial in test mode as a second guard.
+8. **Car Bluetooth state.** A connect broadcast is always a fresh connection, so it needs no first-reading check. The stored state is cleared when no disconnect broadcast will come: on boot, and when the car is changed or removed (the old car's disconnect is filtered out by address). Clearing can only lose a signal, never invent one.
+9. **Write-ahead.** `calling = true` and `lastCallAt` are committed before `placeCall()` runs. If the process dies, `ProcessRestored` marks the result `UNKNOWN_PROCESS_DIED` and never retries. A restored pending timer more than 15 s past its deadline is discarded, and an earlier one is rescheduled.
+10. **Test mode.** The engine emits `SimulateCall` instead of `PlaceCall`, and the runtime refuses to dial in test mode as a second guard.
 
 ## Calling
 

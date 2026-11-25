@@ -108,7 +108,8 @@ class TriggerEngineTest {
 
     @Test
     fun `4b car bluetooth wake then Android Auto first reading connected calls after 5 seconds`() {
-        val h = EngineHarness()
+        // Bluetooth as a wake-up only, so this checks the Android Auto correlation on its own.
+        val h = EngineHarness(config = EngineConfig(carBluetoothEnabled = false))
         h.startInside()
         h.carBluetooth(true)
         assertTrue(WakeReason.CAR_BLUETOOTH in h.wakes)
@@ -116,6 +117,7 @@ class TriggerEngineTest {
         h.androidAuto(SignalState.ACTIVE) // UNKNOWN -> ACTIVE shortly after the car connected
         h.advance(5_000)
         assertEquals(1, h.calls.size)
+        assertEquals(TriggerSource.ANDROID_AUTO, h.calls.single().source)
     }
 
     @Test
@@ -594,5 +596,117 @@ class TriggerEngineTest {
         h.advanceSeconds(60)
         assertEquals(0, h.calls.size)
         assertEquals(Phase.STOPPED, h.phase())
+    }
+
+    // ---- car Bluetooth as a vehicle signal ----------------------------------------------
+
+    @Test
+    fun `bt1 already inside and car Bluetooth connects calls after 5 seconds without Android Auto`() {
+        // A car without Android Auto: the phone has it (enabled) but it never connects.
+        val h = EngineHarness()
+        h.startInside()
+        h.carBluetooth(true)
+        assertTrue(WakeReason.CAR_BLUETOOTH in h.wakes)
+        h.advance(4_999)
+        assertEquals(0, h.calls.size)
+        h.advance(1)
+        assertEquals(1, h.calls.size)
+        assertEquals(TriggerSource.CAR_BLUETOOTH, h.calls.single().source)
+    }
+
+    @Test
+    fun `bt1b car Bluetooth works with every other signal turned off`() {
+        val h = EngineHarness(config = EngineConfig(androidAutoEnabled = false, activityRecognitionEnabled = false))
+        h.startInside()
+        h.carBluetooth(true)
+        h.advanceSeconds(5)
+        assertEquals(1, h.calls.size)
+    }
+
+    @Test
+    fun `bt2 entering while connected to the car uses the delayed revalidated path`() {
+        val h = EngineHarness()
+        h.startOutside()
+        h.carBluetooth(true)
+        h.advanceSeconds(600) // driving home, connected the whole way
+        assertEquals("connecting outside the geofence never calls", 0, h.calls.size)
+        h.enter()
+        assertEquals("no immediate call", 0, h.calls.size)
+        h.advance(5_000)
+        assertEquals(1, h.calls.size)
+        assertEquals(TriggerSource.ENTER_WITH_CAR_BLUETOOTH, h.calls.single().source)
+    }
+
+    @Test
+    fun `bt2b IN_VEHICLE takes priority over car Bluetooth on arrival`() {
+        val h = EngineHarness()
+        h.startOutside()
+        h.carBluetooth(true)
+        h.inVehicle(true)
+        h.advanceSeconds(60)
+        h.enter()
+        assertEquals(1, h.calls.size)
+        assertEquals(TriggerSource.ENTER_WHILE_IN_VEHICLE, h.calls.single().source)
+    }
+
+    @Test
+    fun `bt3 car Bluetooth disconnecting during the delay cancels the call`() {
+        val h = EngineHarness()
+        h.startInside()
+        h.carBluetooth(true)
+        h.advanceSeconds(2)
+        h.carBluetooth(false)
+        h.advanceSeconds(60)
+        assertEquals(0, h.calls.size)
+    }
+
+    @Test
+    fun `bt4 car Bluetooth and Android Auto together produce exactly one call`() {
+        val h = EngineHarness()
+        h.startInside()
+        h.carBluetooth(true)
+        h.advanceSeconds(3)
+        h.androidAuto(SignalState.ACTIVE)
+        h.advanceSeconds(60)
+        assertEquals(1, h.calls.size)
+        assertEquals(TriggerSource.CAR_BLUETOOTH, h.calls.single().source)
+    }
+
+    @Test
+    fun `bt5 car Bluetooth disabled only wakes to check Android Auto`() {
+        val h = EngineHarness(config = EngineConfig(carBluetoothEnabled = false))
+        h.startInside()
+        h.carBluetooth(true)
+        assertTrue(WakeReason.CAR_BLUETOOTH in h.wakes)
+        h.advanceSeconds(60)
+        assertEquals(0, h.calls.size)
+        h.exit()
+        h.advanceSeconds(60)
+        h.enter()
+        h.advanceSeconds(60)
+        assertEquals("a connected car is not a signal when the switch is off", 0, h.calls.size)
+    }
+
+    @Test
+    fun `bt6 reconnecting soon after the call does not call again, leaving later does`() {
+        val h = EngineHarness()
+        h.startOutside()
+        h.carBluetooth(true)
+        h.advanceSeconds(60)
+        h.enter()
+        h.advanceSeconds(5)
+        assertEquals(1, h.calls.size) // arrival
+        h.advanceSeconds(30)
+        h.carBluetooth(false) // engine off
+        h.advanceSeconds(60)
+        h.carBluetooth(true) // moved the car within the quiet period
+        h.advanceSeconds(10)
+        assertEquals(1, h.calls.size)
+        h.carBluetooth(false)
+        h.advanceSeconds(8 * 3600) // overnight
+        h.carBluetooth(true) // leaving in the morning
+        h.advanceSeconds(5)
+        assertEquals(2, h.calls.size)
+        assertEquals(TriggerSource.CAR_BLUETOOTH, h.calls.last().source)
     }
 }

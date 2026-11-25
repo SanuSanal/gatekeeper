@@ -79,8 +79,8 @@ class _CarPickerState extends State<_CarPicker> {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
               child: Text(
-                'Pick your car’s Bluetooth from the devices paired with this phone. When the phone connects to it, '
-                'GateKeeper checks Android Auto.',
+                'Pick your car’s Bluetooth from the devices paired with this phone. Connecting to it inside the '
+                'parking area counts as getting into the car, with or without Android Auto.',
                 style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             ),

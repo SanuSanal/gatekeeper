@@ -181,11 +181,13 @@ object TriggerEngine {
         private fun onGenuineEnter() {
             val inVehicle = config.activityRecognitionEnabled && s.inVehicle == SignalState.ACTIVE
             val aaConnected = config.androidAutoEnabled && s.androidAuto == SignalState.ACTIVE
+            val btConnected = config.carBluetoothEnabled && s.carBluetoothConnected
             when {
                 inVehicle && config.immediateTriggerEnabled ->
                     attemptCall(TriggerSource.ENTER_WHILE_IN_VEHICLE)
                 inVehicle -> scheduleDelayed(TriggerSource.ENTER_WHILE_IN_VEHICLE_DELAYED)
                 aaConnected -> scheduleDelayed(TriggerSource.ENTER_WITH_ANDROID_AUTO)
+                btConnected -> scheduleDelayed(TriggerSource.ENTER_WITH_CAR_BLUETOOTH)
                 else -> {
                     log(LogCategory.TRIGGER, "Entered without an active vehicle signal: waiting")
                     if (config.androidAutoEnabled) effects += Effect.WakeWindow(WakeReason.GEOFENCE_ENTER)
@@ -252,9 +254,18 @@ object TriggerEngine {
             markSource(e)
             val tag = if (e.simulated) " [simulated]" else ""
             if (s.carBluetoothConnected == e.connected) return
+            val wasActive = s.vehicleSignalActive(config)
             s = s.copy(carBluetoothConnected = e.connected, carBluetoothAt = e.at)
             log(LogCategory.BLUETOOTH, "Car Bluetooth ${if (e.connected) "connected" else "disconnected"}$tag")
-            if (e.connected && s.monitoring && s.geofence == GeofenceState.INSIDE && config.androidAutoEnabled) {
+            if (!s.monitoring) return
+            if (!e.connected) {
+                onPossibleFallingEdge(wasActive)
+            } else if (config.carBluetoothEnabled) {
+                // A connect broadcast is always a fresh connection (the state is cleared on reboot and car
+                // change), so unlike Android Auto it needs no "first observed" check.
+                onRisingEdge(TriggerSource.CAR_BLUETOOTH, WakeReason.CAR_BLUETOOTH)
+            } else if (s.geofence == GeofenceState.INSIDE && config.androidAutoEnabled) {
+                // Bluetooth only wakes us to check Android Auto.
                 effects += Effect.WakeWindow(WakeReason.CAR_BLUETOOTH)
             }
         }

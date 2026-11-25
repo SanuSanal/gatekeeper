@@ -16,6 +16,7 @@ data class AppConfig(
     val immediateTrigger: Boolean = true,
     val androidAutoEnabled: Boolean = true,
     val activityRecognitionEnabled: Boolean = true,
+    val carBluetoothEnabled: Boolean = true,
     val testMode: Boolean = false,
     val carDeviceAddress: String? = null,
     val carDeviceName: String? = null,
@@ -30,6 +31,7 @@ data class AppConfig(
         immediateTriggerEnabled = immediateTrigger,
         androidAutoEnabled = androidAutoEnabled,
         activityRecognitionEnabled = activityRecognitionEnabled,
+        carBluetoothEnabled = carBluetoothEnabled && carDeviceAddress != null,
         testMode = testMode,
     )
 }
@@ -62,6 +64,7 @@ class ConfigStore(context: Context) {
         immediateTrigger = prefs.getBoolean(K_IMMEDIATE, true),
         androidAutoEnabled = prefs.getBoolean(K_AA, true),
         activityRecognitionEnabled = prefs.getBoolean(K_AR, true),
+        carBluetoothEnabled = prefs.getBoolean(K_BT, true),
         testMode = prefs.getBoolean(K_TEST, false),
         carDeviceAddress = prefs.getString(K_CAR_ADDR, null),
         carDeviceName = prefs.getString(K_CAR_NAME, null),
@@ -84,6 +87,7 @@ class ConfigStore(context: Context) {
             putBoolean(K_IMMEDIATE, c.immediateTrigger)
             putBoolean(K_AA, c.androidAutoEnabled)
             putBoolean(K_AR, c.activityRecognitionEnabled)
+            putBoolean(K_BT, c.carBluetoothEnabled)
             putBoolean(K_TEST, c.testMode)
             putOrRemove(K_CAR_ADDR, c.carDeviceAddress)
             putOrRemove(K_CAR_NAME, c.carDeviceName)
@@ -114,6 +118,7 @@ class ConfigStore(context: Context) {
         const val K_IMMEDIATE = "immediate_trigger"
         const val K_AA = "android_auto_enabled"
         const val K_AR = "activity_recognition_enabled"
+        const val K_BT = "car_bluetooth_enabled"
         const val K_TEST = "test_mode"
         const val K_CAR_ADDR = "car_device_address"
         const val K_CAR_NAME = "car_device_name"
