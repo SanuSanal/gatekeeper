@@ -6,6 +6,7 @@ import 'src/features/onboarding/onboarding_screen.dart';
 import 'src/features/permissions/permission_service.dart';
 import 'src/features/settings/settings_screen.dart';
 import 'src/ui/logo.dart';
+import 'src/ui/splash.dart';
 import 'src/update/update_controller.dart';
 import 'src/update/update_widgets.dart';
 
@@ -15,11 +16,15 @@ class GateKeeperApp extends StatefulWidget {
     required this.controller,
     required this.updates,
     this.permissions = const PermissionService(),
+    this.splashDuration = SplashScreen.defaultDuration,
   });
 
   final AppController controller;
   final UpdateController updates;
   final PermissionService permissions;
+
+  /// How long the launch animation plays; [Duration.zero] skips it (used by tests).
+  final Duration splashDuration;
 
   @override
   State<GateKeeperApp> createState() => _GateKeeperAppState();
@@ -27,6 +32,7 @@ class GateKeeperApp extends StatefulWidget {
 
 class _GateKeeperAppState extends State<GateKeeperApp> with WidgetsBindingObserver {
   static const _seed = GateKeeperMark.brandGreen;
+  late bool _splashDone = widget.splashDuration == Duration.zero;
 
   @override
   void initState() {
@@ -75,11 +81,21 @@ class _GateKeeperAppState extends State<GateKeeperApp> with WidgetsBindingObserv
         listenable: widget.controller,
         builder: (context, _) {
           final c = widget.controller;
-          if (!c.loaded) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          if (!c.settings.onboardingComplete) {
-            return OnboardingScreen(controller: c, permissions: widget.permissions);
-          }
-          return MainShell(controller: c, updates: widget.updates, permissions: widget.permissions);
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            child: !c.loaded || !_splashDone
+                ? SplashScreen(
+                    key: const ValueKey('splash'),
+                    duration: widget.splashDuration,
+                    onFinished: () => setState(() => _splashDone = true),
+                  )
+                : KeyedSubtree(
+                    key: const ValueKey('app'),
+                    child: c.settings.onboardingComplete
+                        ? MainShell(controller: c, updates: widget.updates, permissions: widget.permissions)
+                        : OnboardingScreen(controller: c, permissions: widget.permissions),
+                  ),
+          );
         },
       ),
     );

@@ -6,6 +6,7 @@ import 'package:gatekeeper/src/features/permissions/permission_service.dart';
 import 'package:gatekeeper/src/platform/gatekeeper_platform.dart';
 import 'package:gatekeeper/src/update/update_controller.dart';
 import 'package:gatekeeper/src/update/update_service.dart';
+import 'package:gatekeeper/src/ui/splash.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +23,11 @@ class FakePermissions extends PermissionService {
   Future<bool> isGranted(PermissionItem item) async => true;
 }
 
-Future<FakePlatform> pumpApp(WidgetTester tester, {void Function(FakePlatform)? setup}) async {
+Future<FakePlatform> pumpApp(
+  WidgetTester tester, {
+  void Function(FakePlatform)? setup,
+  Duration splashDuration = Duration.zero,
+}) async {
   final platform = FakePlatform();
   setup?.call(platform);
   SharedPreferences.setMockInitialValues({'update_auto_check': false});
@@ -34,6 +39,7 @@ Future<FakePlatform> pumpApp(WidgetTester tester, {void Function(FakePlatform)? 
     controller: AppController(platform),
     updates: updates,
     permissions: const FakePermissions(),
+    splashDuration: splashDuration,
   ));
   await tester.pump();
   await tester.pump();
@@ -151,5 +157,23 @@ void main() {
     await tester.tap(find.text('My Car'));
     await tester.pumpAndSettle();
     expect(platform.selectedCar, 'AA:BB:CC:DD:EE:FF');
+  });
+
+  testWidgets('launch splash plays the gate animation, then shows the app', (tester) async {
+    await pumpApp(tester, splashDuration: SplashScreen.defaultDuration);
+    expect(find.byType(SplashScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing, reason: 'held until the animation finishes, even once loaded');
+    await tester.pump(SplashScreen.defaultDuration);
+    await tester.pumpAndSettle();
+    expect(find.byType(SplashScreen), findsNothing);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
+  testWidgets('tapping the splash skips the animation', (tester) async {
+    await pumpApp(tester, splashDuration: SplashScreen.defaultDuration);
+    await tester.tap(find.byType(SplashScreen));
+    await tester.pumpAndSettle();
+    expect(find.byType(SplashScreen), findsNothing);
+    expect(find.byType(NavigationBar), findsOneWidget);
   });
 }
